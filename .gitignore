@@ -110,3 +110,7 @@ UserSettings/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Le3DTilemap Tool
+**/Le3DTilemap/Editor/Settings/*.asset
+**/Le3DTilemap/Editor/Settings/*.asset.meta
