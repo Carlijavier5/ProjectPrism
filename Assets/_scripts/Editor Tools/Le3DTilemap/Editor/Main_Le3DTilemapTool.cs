@@ -7,7 +7,7 @@ using CJUtils;
 namespace Le3DTilemap {
     public enum ToolMode { Move, Place, Pick }
 
-    [EditorTool("Tilemap")]
+    [EditorTool("Le3DTilemap")]
     public partial class Le3DTilemapTool : EditorTool {
 
         public static event System.Action OnToolActivated;
@@ -22,6 +22,9 @@ namespace Le3DTilemap {
         private int gridHeight;
         private GameObject tileObject;
 
+        private Texture2D iconGrip, iconWarning, iconInfo,
+                          iconSearch, iconPlus;
+
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
         public static void Activate() => ToolManager.SetActiveTool<Le3DTilemapTool>();
 
@@ -32,12 +35,16 @@ namespace Le3DTilemap {
             sceneHook = FindAnyObjectByType<LevelGridHook>();
             OnToolActivated?.Invoke();
             OnToolActivated = null;
+            LoadIcons();
         }
 
         public override void OnToolGUI(EditorWindow window) {
             if (window is not SceneView sceneView) { return; }
             if (settings == null) {
-                DrawMissingSettingsPrompt(sceneView);
+                SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
+                                                         "Missing Tool Settings",
+                                                         "New Le3DTilemap Settings",
+                                                         iconPlus, iconSearch);
                 return;
             } if (sceneHook == null) {
                 DrawSceneViewWindowHeader();
@@ -64,7 +71,7 @@ namespace Le3DTilemap {
         }
 
         public override void OnWillBeDeactivated() {
-            
+            Resources.UnloadUnusedAssets();
         }
 
         private void DrawGrid(int y, int distance) {
@@ -75,6 +82,14 @@ namespace Le3DTilemap {
             } for (int z = -distance; z < distance; z++) {
                 Handles.DrawLine(new(-distance, y, z - offset), new(distance, y, z - offset));
             } Handles.zTest = UnityEngine.Rendering.CompareFunction.GreaterEqual;
+        }
+
+        private void LoadIcons() {
+            EditorUtils.LoadIcon(ref iconGrip, EditorUtils.ICON_VGRIP);
+            EditorUtils.LoadIcon(ref iconWarning, EditorUtils.ICON_WARNING);
+            EditorUtils.LoadIcon(ref iconInfo, EditorUtils.ICON_INFO);
+            EditorUtils.LoadIcon(ref iconSearch, EditorUtils.ICON_SEARCH);
+            EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Le3DTilemap {
                     Rect rect = GUILayoutUtility.GetRect(18, 14);
                     bool mouseInRect = rect.Contains(Event.current.mousePosition);
                     GUI.color = mouseInRect ? Color.white : new Vector4(1f, 1f, 1f, 0.6f);
-                    GUI.Label(rect, EditorUtils.FetchIcon("grip_verticalcontainer"));
+                    GUI.Label(rect, iconGrip);
                     GUI.color = Color.white;
                     GUILayout.Label("Tilemap Settings", UIStyles.CenteredLabelBold);
                     if (mouseInRect && Event.current.type == EventType.MouseDown) {
@@ -38,7 +38,7 @@ namespace Le3DTilemap {
         private void DrawContent() {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox)) {
                 if (sceneHook == null) {
-                    GUIUtils.DrawCustomHelpBox("Scene Hook Not Found", EditorUtils.FetchIcon("Warning"));
+                    GUIUtils.DrawCustomHelpBox("Scene Hook Not Found", iconWarning);
                     using (new EditorGUILayout.HorizontalScope()) {
                         if (GUILayout.Button("Search Again")) {
                             sceneHook = FindAnyObjectByType<LevelGridHook>();
@@ -50,7 +50,7 @@ namespace Le3DTilemap {
                         }
                     }
                 } else if (sceneHook.GridData == null) {
-                    GUIUtils.DrawCustomHelpBox("Assign A Level Grid Asset", EditorUtils.FetchIcon("d_console.infoicon.sml"));
+                    GUIUtils.DrawCustomHelpBox("Assign A Level Grid Asset", iconInfo);
                     LevelGridData nData = EditorGUILayout.ObjectField(sceneHook.GridData, typeof(LevelGridData), false) as LevelGridData;
                     if (!(sceneHook.GridData == nData)) sceneHook.EDITOR_SetGrid(nData);
                     if (GUILayout.Button("Generate Level Grid")) {

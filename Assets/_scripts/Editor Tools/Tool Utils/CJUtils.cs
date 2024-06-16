@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 # if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.Search;
 # endif
 
 /// <summary>
@@ -39,7 +40,13 @@ namespace CJUtils {
 
         public static Color DefinedBlue {
             get {
-                return new Vector4(0.0f, 0.35f, 1.0f, 1.0f);
+                return new Vector4(0.75f, 1.2f, 2f, 0.8f);
+            }
+        }
+
+        public static Color MidBlue {
+            get {
+                return new Vector4(0.75f, 0.9f, 1.0f, 1);
             }
         }
 
@@ -158,6 +165,192 @@ namespace CJUtils {
         }
     }
 
+    public enum GridAxis { XZ, XY, YZ }
+
+    public static class GridUtils {
+
+        private const int distance = 20;
+        private const float offset = 0.5f;
+
+        public static void DrawGrid(GridAxis axis, SceneView sceneView, int depth) {
+            if (Event.current.type != EventType.Repaint) return;
+            Vector3Int center = sceneView.camera.transform.position.Round();
+            using (new Handles.DrawingScope(new Vector4(1, 1, 1, 0.25f))) {
+                switch (axis) {
+                    case GridAxis.XZ:
+                        center = new Vector3Int(center.x, depth, center.z);
+                        DrawXZGrid(center);
+                        break;
+                    case GridAxis.XY:
+                        center = new Vector3Int(center.x, center.y, depth);
+                        DrawXYGrid(center);
+                        break;
+                    case GridAxis.YZ:
+                        center = new Vector3Int(depth, center.y, center.z);
+                        DrawYZGrid(center);
+                        break;
+                }
+            }
+        }
+
+        private static void DrawXZGrid(Vector3Int center) {
+            for (int i = -distance; i <= distance; i++) {
+                Handles.DrawLine(center + new Vector3(i, 0, -distance) - Vector3.one * offset,
+                                 center + new Vector3(i, 0, distance) - Vector3.one * offset);
+                Handles.DrawLine(center + new Vector3(distance, 0, i) - Vector3.one * offset,
+                                 center + new Vector3(-distance, 0, i) - Vector3.one * offset);
+            }
+        }
+
+        private static void DrawXYGrid(Vector3Int center) {
+            for (int i = -distance; i < distance; i++) {
+                Handles.DrawLine(center + new Vector3(i, -distance, 0) - Vector3.one * offset,
+                                 center + new Vector3(i, distance, 0) - Vector3.one * offset);
+                Handles.DrawLine(center + new Vector3(-distance, i, 0) - Vector3.one * offset,
+                                 center + new Vector3(distance, i, 0) - Vector3.one * offset);
+            }
+        }
+
+        private static void DrawYZGrid(Vector3Int center) {
+            for (int i = -distance; i < distance; i++) {
+                Handles.DrawLine(center + new Vector3(0, i, -distance) - Vector3.one * offset,
+                                 center + new Vector3(0, i, distance) - Vector3.one * offset);
+                Handles.DrawLine(center + new Vector3(0, -distance, i) - Vector3.one * offset,
+                                 center + new Vector3(0, distance, i) - Vector3.one * offset);
+            }
+        }
+    }
+
+    /// <summary>
+    /// A collection of utilities to draw custom handles in the SceneView;
+    /// </summary>
+    public static class HandleUtils {
+
+        /// <summary>
+        /// Draw a dotted octohedron, similar to Handles.DrawWireCube();
+        /// </summary>
+        public static void DrawDottedOctohedron(Vector3 center, Vector3 size,
+                                                Color color, float thickness = 1) {
+            if (Event.current.type == EventType.Repaint) {
+                Vector3 bounds = size / 2;
+                Vector3[] segments = new Vector3[24];
+                Vector3[] leftFace = GetOctohedronFace(Vector3.left, bounds);
+                Vector3[] rightFace = GetOctohedronFace(Vector3.right, bounds);
+                int jointLength = leftFace.Length + rightFace.Length;
+                for (int i = 0; i < jointLength; i++) {
+                    if (i % 2 == 0) segments[i] = leftFace[i / 2]; 
+                    else segments[i] = rightFace[i / 2];
+                } leftFace.InjectSegments(segments, jointLength);
+                rightFace.InjectSegments(segments, jointLength + leftFace.Length * 2);
+                segments.Offset(center);
+                using (new Handles.DrawingScope(color)) {
+                    Handles.DrawDottedLines(segments, thickness);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw an octohedron with the specified center, size, and color;
+        /// </summary>
+        public static void DrawOctohedralVolume(Vector3 center, Vector3 size,
+                                                Color surfaceColor, Color outlineColor) {
+            if (Event.current.type == EventType.Repaint) {
+                Vector3 bounds = size / 2;
+                Vector3[] normals = new[] { Vector3.left, Vector3.right,
+                                            Vector3.up, Vector3.down,
+                                            Vector3.back, Vector3.forward };
+                foreach (Vector3 normal in normals) {
+                    DrawOctohedronFace(GetOctohedronFace(normal, bounds), center,
+                                       surfaceColor, outlineColor);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw a face offset from a 
+        /// </summary>
+        /// <param name="vertices"> Origin-centered, bounding vertices of the face; </param>
+        /// <param name="center"> Center of the octohedron whose face should be drawn; </param>
+        private static void DrawOctohedronFace(Vector3[] vertices, Vector3 center,
+                                               Color surfaceColor, Color outlineColor) {
+            vertices.Offset(center);
+            Handles.DrawSolidRectangleWithOutline(vertices, surfaceColor, outlineColor);
+        }
+
+        /// <summary>
+        /// Compute the bounding points of a cube face;
+        /// </summary>
+        /// <param name="normal"> Normal of the face; </param>
+        /// <param name="bounds"> Absolute bounds of the cube; </param>
+        /// <returns></returns>
+        private static Vector3[] GetOctohedronFace(Vector3 normal, Vector3 bounds) {
+            /// Isolate constant bound through normal;
+            Vector3 normalBound = VectorUtils.Mult(bounds, normal);
+            /// Split remaining bounds;
+            VectorUtils.SplitVectorByNormal(normal, bounds,
+                            out Vector3 vec1, out Vector3 vec2);
+            /// Gray-code non-normal bounds to build quad bounds;
+            return new Vector3[] { -vec1 + vec2 + normalBound,
+                                   vec1 + vec2 + normalBound,
+                                   vec1 + -vec2 + normalBound,
+                                   -vec1 + -vec2 + normalBound };
+        }
+
+        /// <summary>
+        /// Draw an Arrow Handle that moves along a given axis;
+        /// </summary>
+        /// <param name="id"> ID of the handle control; </param>
+        /// <param name="normal"> Axis to which the arrow is pointing; </param>
+        /// <param name="size"> Size of the handle; </param>
+        /// <param name="color"> Color of the handle; </param>
+        /// <param name="position"> Handle position; </param>
+        /// <param name="activeID"> Control ID selected within the calling GUI; </param>
+        /// <param name="prevMousePos"> Position of the mouse on the previous frame; </param>
+        /// <param name="mouseUpCallback"> Callback for the MouseUp editor event; </param>
+        public static void DrawArrowHandle(int id, Vector3 normal, float size, float offset, Color color,
+                                           ref Vector3 position, ref int activeID, ref Vector3 prevMousePos,
+                                           System.Action mouseUpCallback = null) {
+            if (Event.current.type == EventType.Layout) {
+                Handles.ArrowHandleCap(id, position - normal * offset,
+                                       Quaternion.LookRotation(normal),
+                                       size, EventType.Layout);
+            }
+
+            if (Event.current.type == EventType.Repaint) {
+                Handles.color = HandleUtility.nearestControl == id ? activeID == id ? Color.yellow
+                                                                                    : color * 1.1f
+                                                                   : color;
+                Handles.ArrowHandleCap(id, position - normal * offset,
+                                       Quaternion.LookRotation(normal),
+                                       size, EventType.Repaint);
+            }
+
+            switch (Event.current.type) {
+                case EventType.MouseDown:
+                    activeID = HandleUtility.nearestControl;
+                    prevMousePos = Event.current.mousePosition;
+                    break;
+                case EventType.MouseUp:
+                    activeID = -1;
+                    prevMousePos = Vector3.zero;
+                    mouseUpCallback?.Invoke();
+                    break;
+            };
+
+            if (Event.current.type == EventType.MouseDrag
+                && Event.current.button == 0) {
+                if (activeID == id) {
+                    float move = HandleUtility.CalcLineTranslation(prevMousePos, Event.current.mousePosition,
+                                                                   position + normal * offset, normal);
+                    position += normal * move;
+                } prevMousePos = Event.current.mousePosition;
+            }
+        }
+    }
+
+    /// <summary>
+    /// A collection of functions to faciliate asset creation and access;
+    /// </summary>
     public static class AssetUtils {
 
         /// <summary>
@@ -415,6 +608,17 @@ namespace CJUtils {
         }
 
         /// <summary>
+        /// Draws a Help Box with a custom icon;
+        /// </summary>
+        /// <param name="text"> Help Box message; </param>
+        /// <param name="texture"> Help Box icon; </param>
+        public static void DrawCustomHelpBox(string text, Texture texture, GUIStyle style) {
+            GUIContent messageContent = new GUIContent(text, texture);
+            GUILayout.Label(messageContent, style,
+                            GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
+        }
+
+        /// <summary>
         /// Draw a texture on the current layout;
         /// </summary>
         /// <param name="texture"> Texture to draw; </param>
@@ -433,6 +637,24 @@ namespace CJUtils {
         }
     }
 
+    public static class UndoUtils {
+
+        public static void RecordScopeUndo(Object target, string undoText) {
+            Undo.RecordObject(target, undoText);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(target);
+        }
+
+        public static void RecordFullScopeUndo(Object target, string undoText) {
+            Undo.RegisterCompleteObjectUndo(target, undoText);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(target);
+        }
+
+        public static int StartUndoGroup(string groupName) {
+            Undo.SetCurrentGroupName(groupName);
+            return Undo.GetCurrentGroup();
+        }
+    }
+
     /// <summary>
     /// A collection of functions to draw custom bundles of UI Elements;
     /// </summary>
@@ -441,6 +663,12 @@ namespace CJUtils {
         public const string OBJECT_PICKER_UPDATED = "ObjectSelectorUpdated";
         public const string OBJECT_PICKER_CLOSED = "ObjectSelectorClosed";
 
+        /// <summary>
+        /// Request a menu dropdown displaying options and returning integers;
+        /// </summary>
+        /// <param name="rect"> Dropdown origin; </param>
+        /// <param name="elements"> Strings to display; </param>
+        /// <param name="func"> Callback to fetch results; </param>
         public static void RequestDropdownCallback(Rect rect, string[] elements,
                                                    GenericMenu.MenuFunction2 func) {
             GenericMenu menu = new();
@@ -450,9 +678,26 @@ namespace CJUtils {
         }
 
         /// <summary>
+        /// Request a menu dropdown displaying options and returning objects;
+        /// </summary>
+        /// <param name="rect"> Dropdown origin; </param>
+        /// <param name="elements"> Strings to display; </param>
+        /// <param name="contents"> Objects to return; </param>
+        /// <param name="func"> Callback to fetch results; </param>
+        public static void RequestDropdownCallback<T>(Rect rect, string[] elements, T[] contents,
+                                                      GenericMenu.MenuFunction2 func) where T : Object {
+            GenericMenu menu = new();
+            for (int i = 0; i < elements.Length; i++) {
+                menu.AddItem(new GUIContent(elements[i]), false, func, contents[i]);
+            } menu.DropDown(rect);
+        }
+
+        /// <summary>
         /// Quick extension to show the Object picker for a given object type;
         /// <br></br> The result must be captured with CatchOPEvent;
         /// <br></br> The value must be checked on the Editor that calls this method;
+        /// <br></br> This version is unreliable, as the OP may not always fire callbacks;
+        /// Use ShowAdvancedObjectPicker() instead to pass in direct callbacks;
         /// </summary>
         /// <param name="obj"> Object whose type will be included in the Object Picker; </param>
         public static void ShowObjectPicker<T>(T obj, string filter = "") where T : Object {
@@ -491,6 +736,15 @@ namespace CJUtils {
         /// }
 
         /// <summary>
+        /// Quick extension to show the SearchView in context to retrieve an object;
+        /// <br></br> Accepts a callback that fires when an object is chosen;
+        /// </summary>
+        public static void ShowAdvancedObjectPicker<T>(System.Action<Object, bool> callback,
+                                                    string filter = "") {
+            SearchService.ShowObjectPicker(callback, (obj) => { }, filter, "", typeof(T));
+        }
+
+        /// <summary>
         /// Opens and/or focuses the Project Window;
         /// </summary>
         public static void OpenProjectWindow() {
@@ -508,6 +762,21 @@ namespace CJUtils {
         }
 
         /// <summary>
+        /// Turn window into a drop zone that accepts drag operations;
+        /// <br></br> Verify whether mouse is contained within control to restrict the window;
+        /// <br></br>
+        /// </summary>
+        public static object[] DropZone() {
+            bool isAccepted = false;
+            if (Event.current.type == EventType.DragUpdated || Event.current.type == EventType.DragPerform) {
+                if (Event.current.type == EventType.DragPerform) {
+                    DragAndDrop.AcceptDrag();
+                    isAccepted = true;
+                } Event.current.Use();
+            } return isAccepted ? DragAndDrop.objectReferences : null;
+        }
+
+        /// <summary>
         /// Returns the width of a text string in pixels;
         /// </summary>
         /// <param name="text"> Text string to measure; </param>
@@ -522,6 +791,22 @@ namespace CJUtils {
             } return width;
         }
 
+        /// <summary> Common icon string; </summary>
+        public const string ICON_INFO = "d_console.infoicon.sml",
+                            ICON_WARNING = "Warning",
+                            ICON_ERROR = "Error",
+                            ICON_PLUS = "Toolbar Plus",
+                            ICON_LESS = "Toolbar Minus",
+                            ICON_PLUS_MORE = "d_Toolbar Plus More",
+                            ICON_HELP = "_Help",
+                            ICON_SEARCH = "Search Icon",
+                            ICON_HGRIP = "grip_horizontalcontainer",
+                            ICON_VGRIP = "grip_verticalcontainer",
+                            ICON_CHECK_BLUE = "d_P4_CheckOutRemote",
+                            ICON_CHECK_YELLOW = "d_P4_OutOfSync",
+                            ICON_CHECK_RED = "d_P4_Offline",
+                            ICON_SETTINGS = "_Popup";
+
         /// <summary>
         /// Fetch an icon texture from the database.
         /// <br></br> A list of Unity's Built-In Icon Names can be found <a href="https://github.com/Zxynine/UnityEditorIcons/tree/main">here</a>;
@@ -530,6 +815,15 @@ namespace CJUtils {
         /// <returns> Icon texture; </returns>
         public static Texture2D FetchIcon(string iconName) {
             return (Texture2D) EditorGUIUtility.IconContent(iconName).image;
+        }
+
+        /// <summary>
+        /// Assign an icon to a variable if it's unnassigned;
+        /// </summary>
+        /// <param name="icon"> Variable to which the icon will be assigned; </param>
+        /// <param name="identifier"> Identifying string for the icon to load; </param>
+        public static void LoadIcon(ref Texture2D icon, string identifier) {
+            icon = icon != null ? icon : FetchIcon(identifier);
         }
 
         /// <summary>

@@ -21,6 +21,15 @@ public static class StringUtils {
     }
 
     /// <summary>
+    /// Contains extension for strings;
+    /// </summary>
+    /// <param name="comparison"> Comparison mode for the contains operation; </param>
+    /// <returns> Whether the string contains a case insensitive substring; </returns>
+    public static bool Contains(this string str, string substring, System.StringComparison comparison) {
+        return str?.IndexOf(substring, comparison) >= 0;
+    }
+
+    /// <summary>
     /// Remove the ending of a string up to a given delimeter;<br></br>
     /// Used in the script to remove substrings pertaining to file pathing;
     /// </summary>

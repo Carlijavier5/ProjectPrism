@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: New Palette
   m_EditorClassIdentifier: 
   tiles:
+  - {fileID: 11400000, guid: 9b462f936927eb343a35395247e8bbeb, type: 2}
+  - {fileID: 11400000, guid: a5ed290000073024481143f7e33f26c2, type: 2}
+  - {fileID: 11400000, guid: 68fbafa6d2f12c94597fce59d9802902, type: 2}
+  - {fileID: 11400000, guid: f18d235532b8b1342867f473db0a3c82, type: 2}
+  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}
+  - {fileID: 11400000, guid: 356af3fd0c11d954389eef38b87d1c2d, type: 2}
   - {fileID: 11400000, guid: 33b9638832c6a084396db4cf5d82d893, type: 2}
-  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}
-  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}
-  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}
-  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}
-  - {fileID: 11400000, guid: 340d9b4f526763d418e56f82111dd1ff, type: 2}

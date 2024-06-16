@@ -14,15 +14,20 @@ namespace Le3DTilemap {
         private string tileName = "No Tile Selected";
         private Vector2 globalScroll;
 
+        private Texture2D iconHelp, iconGood;
+
         public static TileCreationWindow ShowAuxiliary(GameObject prefab) {
             TileCreationWindow window = GetWindow<TileCreationWindow>("New Tile Data");
             window.prefab = prefab;
+            if (prefab) window.tileName = prefab.name;
             window.ShowAuxWindow();
             return window;
         }
 
         void OnEnable() {
             AssemblyReloadEvents.beforeAssemblyReload += AssemblyCleanup;
+            EditorUtils.LoadIcon(ref iconHelp, EditorUtils.ICON_HELP);
+            EditorUtils.LoadIcon(ref iconGood, EditorUtils.ICON_CHECK_BLUE);
         }
 
         void OnGUI() {
@@ -79,7 +84,7 @@ namespace Le3DTilemap {
                                            + "\n- Cannot contain invalid characters"
                                     }; tileName = EditorGUILayout.TextField("Name:", tileName);
                                     GUIStyle style = new(EditorStyles.label) { contentOffset = new (0, -2) };
-                                    GUILayout.Label(new GUIContent(EditorUtils.FetchIcon("_Help"), tooltip),
+                                    GUILayout.Label(new GUIContent(iconHelp, tooltip),
                                                     style, GUILayout.Width(19), GUILayout.Height(19));
                                     GUI.color = Color.white;
                                 } EditorGUILayout.Popup("Complexity:", 0, new string[] { "Single" });
@@ -116,8 +121,7 @@ namespace Le3DTilemap {
         private void DisplayMessages() {
             /*GUIUtils.DrawCustomHelpBox(" Missing Editor Node. Won't be added to Palette;",
                                                        EditorUtils.FetchIcon("d_P4_Offline"));*/
-            GUIUtils.DrawCustomHelpBox(" Complexity: No collider edits required;",
-                                       EditorUtils.FetchIcon("d_P4_CheckOutRemote"));
+            GUIUtils.DrawCustomHelpBox(" Complexity: No collider edits required;", iconGood);
             /*GUIUtils.DrawCustomHelpBox(" Complexity: Additional collider edits required;",
                                        EditorUtils.FetchIcon("d_P4_OutOfSync"));*/
         }

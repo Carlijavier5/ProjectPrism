@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 namespace Le3DTilemap {
     public class TilePalette3D : ScriptableObject {
@@ -14,6 +15,7 @@ namespace Le3DTilemap {
         public bool Add(TileData tileData) {
             if (!Tiles.Contains(tileData)) {
                 tiles.Add(tileData);
+                EditorUtility.SetDirty(this);
                 return true;
             } return false;
         }
@@ -23,10 +25,16 @@ namespace Le3DTilemap {
         public bool Insert(int index, TileData tileData) {
             if (!Tiles.Contains(tileData)) {
                 tiles.Insert(index, tileData);
+                EditorUtility.SetDirty(this);
                 return true;
             } return false;
         }
 
-        public bool Remove(TileData tileData) => Tiles.Remove(tileData);
+        public bool Remove(TileData tileData) {
+            if (Tiles.Remove(tileData)) {
+                EditorUtility.SetDirty(this);
+                return true;
+            } return false;
+        }
     }
 }
