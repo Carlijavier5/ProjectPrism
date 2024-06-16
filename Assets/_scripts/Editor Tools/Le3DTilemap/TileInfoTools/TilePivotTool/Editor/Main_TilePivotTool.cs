@@ -40,8 +40,7 @@ namespace Le3DTilemap {
                                         "New Dynamic Grid Settings",
                                         iconSearch, iconPlus);
                 return;
-            } if (gridQuad == null) return; 
-            DrawSceneViewWindowHeader();
+            } DrawSceneViewWindowHeader();
         }
 
         private void InitializeLocalGrid() {

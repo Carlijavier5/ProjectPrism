@@ -77,75 +77,80 @@ namespace Le3DTilemap {
 
         private void DrawContent() {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox)) {
-                using (new EditorGUILayout.HorizontalScope()) {
-                    GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
-                        if (showSettings) {
-                            DrawToolModeButton(GridSettingsPage.View, new RectOffset() { right = 0 });
-                            DrawToolModeButton(GridSettingsPage.Options, new RectOffset() { right = 0, left = 0 });
-                            DrawToolModeButton(GridSettingsPage.Colors, new RectOffset() { left = 0 });
-                            GUI.enabled = true;
-                        } else {
-                            GUILayout.Button("Move Button");
-                            GUILayout.Button("Orientation");
-                        }
-                    } GUILayout.FlexibleSpace();
-                } GUIStyle paddedBox = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(6, 6, 6, 6) };
-                using (new EditorGUILayout.VerticalScope(paddedBox, GUILayout.Height(50))) {
-                    if (showSettings) {
-                        using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                            switch (settingsPage) {
-                                case GridSettingsPage.View:
-                                    using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Size:");
-                                        EditorGUIUtility.labelWidth = 0;
-                                        GUILayout.FlexibleSpace();
-                                        GUI.enabled = false;
-                                        settings.size = EditorGUILayout.IntField(settings.size,
-                                                                                 GUILayout.Width(80));
-                                    } using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Component:");
-                                        GUI.enabled = false;
-                                        EditorGUILayout.ObjectField(gridQuad, typeof(DynamicGridQuad),
-                                                                    false, GUILayout.Width(80));
-                                        GUI.enabled = true;
-                                    } break;
-                                case GridSettingsPage.Options:
-                                    using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Ignore zTest:");
-                                        GUILayout.FlexibleSpace();
-                                        settings.ignoreZTest = GUILayout.Toggle(settings.ignoreZTest, "");
-                                    } using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Follow Camera:");
-                                        GUILayout.FlexibleSpace();
-                                        settings.followCamera = GUILayout.Toggle(settings.followCamera, "");
-                                    } break;
-                                case GridSettingsPage.Colors:
-                                    using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Base:");
-                                        GUILayout.FlexibleSpace();
-                                        settings.baseColor = EditorGUILayout.ColorField(settings.baseColor);
-                                    } using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Hint:");
-                                        GUILayout.FlexibleSpace();
-                                        settings.baseColor = EditorGUILayout.ColorField(settings.baseColor);
-                                    } break;
-                            } if (changeScope.changed) EditorUtility.SetDirty(settings);
-                        }
-                    } else {
-                        using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Orientation:");
-                            GUILayout.FlexibleSpace();
-                            GridOrientation newOrientation = (GridOrientation) EditorGUILayout.EnumPopup(
-                                                                orientation, GUILayout.Width(80));
-                            if (newOrientation != orientation) {
-                                SetGridOrienration(newOrientation);
-                                orientation = newOrientation;
+                if (gridQuad == null) {
+                    GUIUtils.DrawScopeCenteredText("Missing Dynamic Quad;\n"
+                                                   + "Check Grid Settings!");
+                } else {
+                    using (new EditorGUILayout.HorizontalScope()) {
+                        GUILayout.FlexibleSpace();
+                        using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
+                            if (showSettings) {
+                                DrawToolModeButton(GridSettingsPage.View, new RectOffset() { right = 0 });
+                                DrawToolModeButton(GridSettingsPage.Options, new RectOffset() { right = 0, left = 0 });
+                                DrawToolModeButton(GridSettingsPage.Colors, new RectOffset() { left = 0 });
+                                GUI.enabled = true;
+                            } else {
+                                GUILayout.Button("Move Button");
+                                GUILayout.Button("Orientation");
                             }
-                        } using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Toggle Grid:");
-                            GUILayout.FlexibleSpace();
-                            GUILayout.Button("On", GUILayout.Width(80));
+                        } GUILayout.FlexibleSpace();
+                    } GUIStyle paddedBox = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(6, 6, 6, 6) };
+                    using (new EditorGUILayout.VerticalScope(paddedBox, GUILayout.Height(50))) {
+                        if (showSettings) {
+                            using (var changeScope = new EditorGUI.ChangeCheckScope()) {
+                                switch (settingsPage) {
+                                    case GridSettingsPage.View:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Size:");
+                                            EditorGUIUtility.labelWidth = 0;
+                                            GUILayout.FlexibleSpace();
+                                            GUI.enabled = false;
+                                            settings.size = EditorGUILayout.IntField(settings.size,
+                                                                                     GUILayout.Width(80));
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Component:");
+                                            GUI.enabled = false;
+                                            EditorGUILayout.ObjectField(gridQuad, typeof(DynamicGridQuad),
+                                                                        false, GUILayout.Width(80));
+                                            GUI.enabled = true;
+                                        } break;
+                                    case GridSettingsPage.Options:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Ignore zTest:");
+                                            GUILayout.FlexibleSpace();
+                                            settings.ignoreZTest = GUILayout.Toggle(settings.ignoreZTest, "");
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Follow Camera:");
+                                            GUILayout.FlexibleSpace();
+                                            settings.followCamera = GUILayout.Toggle(settings.followCamera, "");
+                                        } break;
+                                    case GridSettingsPage.Colors:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Base:");
+                                            GUILayout.FlexibleSpace();
+                                            settings.baseColor = EditorGUILayout.ColorField(settings.baseColor);
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Hint:");
+                                            GUILayout.FlexibleSpace();
+                                            settings.baseColor = EditorGUILayout.ColorField(settings.baseColor);
+                                        } break;
+                                } if (changeScope.changed) EditorUtility.SetDirty(settings);
+                            }
+                        } else {
+                            using (new EditorGUILayout.HorizontalScope()) {
+                                GUILayout.Label("Orientation:");
+                                GUILayout.FlexibleSpace();
+                                GridOrientation newOrientation = (GridOrientation) EditorGUILayout.EnumPopup(
+                                                                    orientation, GUILayout.Width(80));
+                                if (newOrientation != orientation) {
+                                    SetGridOrienration(newOrientation);
+                                    orientation = newOrientation;
+                                }
+                            } using (new EditorGUILayout.HorizontalScope()) {
+                                GUILayout.Label("Toggle Grid:");
+                                GUILayout.FlexibleSpace();
+                                GUILayout.Button("On", GUILayout.Width(80));
+                            }
                         }
                     }
                 }
