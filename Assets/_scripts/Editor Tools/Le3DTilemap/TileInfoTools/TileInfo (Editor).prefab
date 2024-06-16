@@ -55,6 +55,7 @@ MonoBehaviour:
     info: {fileID: 4428366674542714364}
     collider: {fileID: 3364160053547542942}
     pivot: {x: 0, y: 1, z: 1}
+  tilePivot: {x: 0, y: 0, z: 0}
   nameHint: 148
 --- !u!65 &-4967376447422287288
 BoxCollider:

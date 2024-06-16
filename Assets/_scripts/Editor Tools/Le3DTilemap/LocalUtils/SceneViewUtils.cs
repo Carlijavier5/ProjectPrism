@@ -40,7 +40,7 @@ namespace Le3DTilemap {
                                                         Texture2D iconSearch, Texture2D iconPlus)
                                                         where T : ScriptableObject {
             sceneView.sceneViewState.alwaysRefresh = true;
-            DrawMissingSettingsPrompt(ref settings, sceneView, title, createPrompt, iconSearch, iconPlus);
+            DrawMissingSettingsPrompt(ref settings, title, createPrompt, iconSearch, iconPlus);
         }
     }
 }

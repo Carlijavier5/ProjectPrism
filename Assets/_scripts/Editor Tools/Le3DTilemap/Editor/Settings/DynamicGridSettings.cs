@@ -9,7 +9,7 @@ namespace Le3DTilemap {
 
         [HideInInspector] public SceneViewWindowSettings sceneGUI;
 
-        public DynamicGridQuad gridPrefab;
+        public GameObject quadPrefab;
         public int size;
 
         public bool followCamera;

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1156109494674401806}
   - component: {fileID: 587322759785110694}
   m_Layer: 2
-  m_Name: GridQuad
+  m_Name: GridQuad (Temp)
   m_TagString: EditorOnly
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
