@@ -5,7 +5,10 @@ using UnityEditor;
 using CJUtils;
 
 namespace Le3DTilemap {
+
     public class TileInfo : MonoBehaviour {
+
+        private const float OFFSET = 0.5f;
 
         public event System.Action OnSelectionChanged;
 
@@ -19,6 +22,7 @@ namespace Le3DTilemap {
                 if (tilePivot != value) {
                     UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
                     tilePivot = value;
+                    RecordTilespaceChange();
                 }
             }
         }
@@ -41,13 +45,16 @@ namespace Le3DTilemap {
         [SerializeField] private SerializableHashSet<Vector3Int> tilespace;
         public SerializableHashSet<Vector3Int> Tilespace => tilespace ??= new();
         
-        [HideInInspector]
         [SerializeField] private int hashVersion;
         public int HashVersion => hashVersion;
+
+        [SerializeField] private bool pendingHash;
+        public bool PendingHash => pendingHash;
 
         void OnValidate() => HideTransformAndColliders();
 
         public void HideTransformAndColliders() {
+            gameObject.SetActive(true);
             gameObject.hideFlags = HideFlags.NotEditable;
             transform.hideFlags = HideFlags.NotEditable;
             foreach (TileCollider collider in Colliders) {
@@ -71,6 +78,7 @@ namespace Le3DTilemap {
 
             Colliders.Add(new TileCollider(this, NextChar));
 
+            RecordTilespaceChange();
             Undo.CollapseUndoOperations(undoGroup);
         }
 
@@ -84,6 +92,7 @@ namespace Le3DTilemap {
             colliders.RemoveAt(colliders.Count - 1);
             collider.Dispose();
 
+            RecordTilespaceChange();
             Undo.CollapseUndoOperations(undoGroup);
         }
 
@@ -99,6 +108,7 @@ namespace Le3DTilemap {
             colliders.RemoveAt(index);
             collider.Dispose();
 
+            RecordTilespaceChange();
             Undo.CollapseUndoOperations(undoGroup);
             return index;
         }
@@ -123,6 +133,32 @@ namespace Le3DTilemap {
         public void EventDispose() {
             selectedIndex = -1;
             OnSelectionChanged = null;
+            HashTilespace();
+        }
+
+        public void RecordTilespaceChange() {
+            UndoUtils.RecordScopeUndo(this, "Pending Hash (TileInfo)");
+            pendingHash = true;
+        }
+
+        public void HashTilespace() {
+            UndoUtils.RecordScopeUndo(this, "Tilespace Hash (TileInfo)");
+            SerializableHashSet<Vector3Int> newHash = new();
+            foreach (TileCollider collider in Colliders) {
+                for (int x = Mathf.RoundToInt(collider.Center.x - collider.Size.x / 2f + OFFSET);
+                     x <= Mathf.RoundToInt(collider.Center.x + collider.Size.x / 2f - OFFSET); x++) {
+                    for (int y = Mathf.RoundToInt(collider.Center.y - collider.Size.y / 2f + OFFSET);
+                         y <= Mathf.RoundToInt(collider.Center.y + collider.Size.y / 2f - OFFSET); y++) {
+                        for (int z = Mathf.RoundToInt(collider.Center.z - collider.Size.z / 2f + OFFSET);
+                             z <= Mathf.RoundToInt(collider.Center.z + collider.Size.z / 2f - OFFSET); z++) {
+                            newHash.Add(new Vector3Int(x, y, z) + TilePivot);
+                        }
+                    }
+                }
+            } if (!newHash.SetEquals(tilespace)) {
+                tilespace = newHash;
+                hashVersion++;
+            } pendingHash = false;
         }
 
         void OnDestroy() {

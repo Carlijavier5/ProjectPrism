@@ -41,7 +41,8 @@ namespace Le3DTilemap {
                 selectionIsInvalid = Selection.count != 1
                                      || AssetDatabase.Contains(Selection.activeObject);
                 if (!selectionIsInvalid) {
-                    ToolManager.SetActiveTool<TileColliderTool>();
+                    try { ToolManager.SetActiveTool<TileColliderTool>(); }
+                    catch { }
                 }
             }; return base.CreateInspectorGUI();
         }
@@ -55,7 +56,7 @@ namespace Le3DTilemap {
 
         public override void OnInspectorGUI() {
             GUIStyle style = new(EditorStyles.helpBox) { margin = new RectOffset(0, 0, 2, 0),
-                                                         padding = new RectOffset(8, 8, 8,
+                padding = new RectOffset(8, 8, 8,
                                                          Info.Colliders.Count == 0 ? 8 : 6) };
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                 GUILayout.Label("Tile Pivot", UIStyles.CenteredLabelBold);
@@ -100,8 +101,8 @@ namespace Le3DTilemap {
             } using (new EditorGUILayout.HorizontalScope()) {
                 GUIStyle tsStyle = new(GUI.skin.box) { normal = { textColor = GUI.skin.label
                                                                   .normal.textColor },
-                                                       margin = new() };
-                GUILayout.FlexibleSpace();
+                    margin = new() };
+                EditorGUILayout.Space(10);
                 GUILayout.Label("Colliders:");
                 GUILayout.FlexibleSpace();
                 GUILayout.Label($"{Info.Colliders.Count}", tsStyle,
@@ -113,9 +114,26 @@ namespace Le3DTilemap {
                 GUILayout.FlexibleSpace();
                 GUILayout.Label($"{Info.Tilespace.Count}", tsStyle,
                                 GUILayout.Width(80));
-                GUILayout.FlexibleSpace();
+                EditorGUILayout.Space(10);
             } using (new EditorGUILayout.HorizontalScope()) {
-                
+                EditorGUILayout.Space(10);
+                GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, 2) };
+                GUILayout.Label(Info.PendingHash ? "New changes recorded"
+                                                 : "All changes committed", lStyle);
+                GUILayout.FlexibleSpace();
+                if (Info.PendingHash) {
+                    GUI.color = UIColors.Blue;
+                    if (GUILayout.Button("Rehash", GUILayout.Width(100),
+                                     GUILayout.Height(20))) {
+                        Info.HashTilespace();
+                    }
+                } else {
+                    GUIStyle bStyle = new(UIStyles.TextBoxLabel) {                               
+                        margin = GUI.skin.button.margin,
+                    }; GUILayout.Label(iconDone, bStyle, GUILayout.Width(100),
+                                       GUILayout.Height(20));
+                } GUI.color = Color.white;
+                EditorGUILayout.Space(10);
             } EditorGUILayout.GetControlRect(GUILayout.Height(5));
             GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
             EditorGUILayout.GetControlRect(GUILayout.Height(5));
@@ -127,8 +145,16 @@ namespace Le3DTilemap {
                     padding = new RectOffset(4, 4, 4, 4),
                     margin = new RectOffset(4, 4, 4, 4)
                 };
-                GUIUtils.DrawCustomHelpBox(" Minimum tile components met. Tilespace is valid!", iconDone, hBox);
-                GUIUtils.DrawCustomHelpBox(" Tilespace is not hashed. Will hash automatically;", iconWarn, hBox);
+                string message = Info.Colliders.Count > 0 ? " Minimum tile components met. Tilespace is valid!"
+                                                          : " No colliders detected. Tilespace is invalid!";
+                Texture2D icon = Info.Colliders.Count > 0 ? iconDone : iconFail;
+                GUIUtils.DrawCustomHelpBox(message, icon, hBox);
+                message = Info.Colliders.Count == 0 ? " Instances will be flagged and preserved;"
+                        : Info.PendingHash ? " Tilespace changed. Scheduled auto-rehash;"
+                                           : " Tilespace is hashed and up-to-date;";
+                icon = Info.Colliders.Count == 0 ? iconFail
+                     : Info.PendingHash ? iconWarn : iconDone;
+                GUIUtils.DrawCustomHelpBox(message, icon, hBox);
             }
         }
 
@@ -139,7 +165,9 @@ namespace Le3DTilemap {
         private void DrawColliderCards() {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                 GUILayout.Label("Tile Colliders", UIStyles.CenteredLabelBold);
-            } using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos)) {
+            } GUILayoutOption[] options = Info.Colliders.Count <= 3 ? new GUILayoutOption[] { }
+                                                                    : new[] { GUILayout.MaxHeight(200) };
+            using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos, options)) {
                 scrollPos = scrollScope.scrollPosition;
                 if (mouseInScope && DragAndDrop.objectReferences.Length == 1) {
                     DragAndDrop.visualMode = DragAndDropVisualMode.Move;
@@ -198,7 +226,7 @@ namespace Le3DTilemap {
 
         private void DrawSelectionButton(TileCollider collider, int index) {
             Rect rect = EditorGUILayout.GetControlRect(GUILayout.Width(40),
-                                                       GUILayout.ExpandHeight(true));
+                                                       GUILayout.Height(40));
             GUIStyle style = new(UIStyles.WindowBox) { padding = new RectOffset(10, 10, 10, 10),
                                                        contentOffset = Vector2.zero,
                                                        richText = true,

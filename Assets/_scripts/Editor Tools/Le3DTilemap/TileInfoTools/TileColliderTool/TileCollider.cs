@@ -21,6 +21,7 @@ namespace Le3DTilemap {
                     collider.center += value - pivot;
                     UndoUtils.RecordScopeUndo(info, "Move (Tile Collider)");
                     pivot = value;
+                    info.RecordTilespaceChange();
                     Undo.CollapseUndoOperations(undoGroup);
                 }
             }
@@ -61,12 +62,14 @@ namespace Le3DTilemap {
                 UndoUtils.RecordScopeUndo(info, "Change Pivot (Tile Collider)");
                 /// Return the pivot by the change in size, towards the center;
                 pivot += (pivotNormal - centerNormal).Round().Normalize() * diffSize.Abs();
-            } Undo.CollapseUndoOperations(undoGroup);
+            } info.RecordTilespaceChange();
+            Undo.CollapseUndoOperations(undoGroup);
         }
 
         public void ShiftPivot(Vector3Int newPivot) {
             UndoUtils.RecordScopeUndo(info, "Change Collider Pivot (Tile Collider)");
             pivot = newPivot;
+            info.RecordTilespaceChange();
         }
 
         public void Dispose() {

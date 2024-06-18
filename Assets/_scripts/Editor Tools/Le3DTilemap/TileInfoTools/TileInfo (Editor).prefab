@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4252071663936107826}
   - component: {fileID: 4428366674542714364}
-  - component: {fileID: 8727444079180106121}
+  - component: {fileID: 2798805131099911587}
   m_Layer: 6
   m_Name: TileInfo (Editor)
   m_TagString: EditorOnly
@@ -46,16 +46,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliders:
-  - name: 85
+  - name: 72
     info: {fileID: 4428366674542714364}
-    collider: {fileID: 8727444079180106121}
+    collider: {fileID: 2798805131099911587}
     pivot: {x: 0, y: 0, z: 0}
-  tilePivot: {x: -1, y: 0, z: -3}
-  nameHint: 180
+  tilePivot: {x: 0, y: 0, z: -2}
+  nameHint: 64
   tilespace:
-    m_keys: []
-  hashVersion: 0
---- !u!65 &8727444079180106121
+    m_keys:
+    - {x: 0, y: 0, z: -2}
+  hashVersion: 4
+  pendingHash: 1
+--- !u!65 &2798805131099911587
 BoxCollider:
   m_ObjectHideFlags: 10
   m_CorrespondingSourceObject: {fileID: 0}
