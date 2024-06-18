@@ -19,7 +19,6 @@ namespace Le3DTilemap {
                 if (tilePivot != value) {
                     UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
                     tilePivot = value;
-                    EditorUtility.SetDirty(this);
                 }
             }
         }
@@ -37,6 +36,14 @@ namespace Le3DTilemap {
                 } return null;
             }
         }
+
+        [HideInInspector]
+        [SerializeField] private SerializableHashSet<Vector3Int> tilespace;
+        public SerializableHashSet<Vector3Int> Tilespace => tilespace ??= new();
+        
+        [HideInInspector]
+        [SerializeField] private int hashVersion;
+        public int HashVersion => hashVersion;
 
         void OnValidate() => HideTransformAndColliders();
 
@@ -63,7 +70,6 @@ namespace Le3DTilemap {
             UndoUtils.RecordFullScopeUndo(this, "Add Tile Collider (Tile Info)");
 
             Colliders.Add(new TileCollider(this, NextChar));
-            EditorUtility.SetDirty(this);
 
             Undo.CollapseUndoOperations(undoGroup);
         }
@@ -77,7 +83,6 @@ namespace Le3DTilemap {
             TileCollider collider = colliders[colliders.Count - 1];
             colliders.RemoveAt(colliders.Count - 1);
             collider.Dispose();
-            EditorUtility.SetDirty(this);
 
             Undo.CollapseUndoOperations(undoGroup);
         }
@@ -93,7 +98,6 @@ namespace Le3DTilemap {
             TileCollider collider = colliders[index];
             colliders.RemoveAt(index);
             collider.Dispose();
-            EditorUtility.SetDirty(this);
 
             Undo.CollapseUndoOperations(undoGroup);
             return index;

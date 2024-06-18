@@ -21,7 +21,6 @@ namespace Le3DTilemap {
                     collider.center += value - pivot;
                     UndoUtils.RecordScopeUndo(info, "Move (Tile Collider)");
                     pivot = value;
-                    EditorUtility.SetDirty(info);
                     Undo.CollapseUndoOperations(undoGroup);
                 }
             }
@@ -42,7 +41,6 @@ namespace Le3DTilemap {
             info.gameObject.hideFlags = ogFlags;
             
             collider.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
-            EditorUtility.SetDirty(info.gameObject);
         }
 
         public void Resize(Vector3Int diffCenter, Vector3Int diffSize) {
@@ -63,15 +61,12 @@ namespace Le3DTilemap {
                 UndoUtils.RecordScopeUndo(info, "Change Pivot (Tile Collider)");
                 /// Return the pivot by the change in size, towards the center;
                 pivot += (pivotNormal - centerNormal).Round().Normalize() * diffSize.Abs();
-                EditorUtility.SetDirty(info);
-            } EditorUtility.SetDirty(collider);
-            Undo.CollapseUndoOperations(undoGroup);
+            } Undo.CollapseUndoOperations(undoGroup);
         }
 
         public void ShiftPivot(Vector3Int newPivot) {
             UndoUtils.RecordScopeUndo(info, "Change Collider Pivot (Tile Collider)");
             pivot = newPivot;
-            EditorUtility.SetDirty(info);
         }
 
         public void Dispose() {

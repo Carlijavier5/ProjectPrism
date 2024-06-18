@@ -96,6 +96,30 @@ namespace Le3DTilemap {
             GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
             EditorGUILayout.GetControlRect(GUILayout.Height(5));
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
+                GUILayout.Label("Tilespace Info", UIStyles.CenteredLabelBold);
+            } using (new EditorGUILayout.HorizontalScope()) {
+                GUIStyle tsStyle = new(GUI.skin.box) { normal = { textColor = GUI.skin.label
+                                                                  .normal.textColor },
+                                                       margin = new() };
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Colliders:");
+                GUILayout.FlexibleSpace();
+                GUILayout.Label($"{Info.Colliders.Count}", tsStyle,
+                                GUILayout.Width(40));
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("|");
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Size:");
+                GUILayout.FlexibleSpace();
+                GUILayout.Label($"{Info.Tilespace.Count}", tsStyle,
+                                GUILayout.Width(80));
+                GUILayout.FlexibleSpace();
+            } using (new EditorGUILayout.HorizontalScope()) {
+                
+            } EditorGUILayout.GetControlRect(GUILayout.Height(5));
+            GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
+            EditorGUILayout.GetControlRect(GUILayout.Height(5));
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                 GUILayout.Label("Messages", UIStyles.CenteredLabelBold);
             } GUIStyle paddedBox = new(GUI.skin.box) { padding = new RectOffset(4, 4, 4, 4) };
             using (new EditorGUILayout.VerticalScope(paddedBox)) {
@@ -104,7 +128,7 @@ namespace Le3DTilemap {
                     margin = new RectOffset(4, 4, 4, 4)
                 };
                 GUIUtils.DrawCustomHelpBox(" Minimum tile components met. Tilespace is valid!", iconDone, hBox);
-                GUIUtils.DrawCustomHelpBox(" Tile Space is not hashed;", iconWarn, hBox);
+                GUIUtils.DrawCustomHelpBox(" Tilespace is not hashed. Will hash automatically;", iconWarn, hBox);
             }
         }
 

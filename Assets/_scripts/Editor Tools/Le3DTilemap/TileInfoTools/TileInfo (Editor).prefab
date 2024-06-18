@@ -50,8 +50,11 @@ MonoBehaviour:
     info: {fileID: 4428366674542714364}
     collider: {fileID: 8727444079180106121}
     pivot: {x: 0, y: 0, z: 0}
-  tilePivot: {x: 0, y: 0, z: 0}
-  nameHint: 178
+  tilePivot: {x: -1, y: 0, z: -3}
+  nameHint: 180
+  tilespace:
+    m_keys: []
+  hashVersion: 0
 --- !u!65 &8727444079180106121
 BoxCollider:
   m_ObjectHideFlags: 10
