@@ -6,6 +6,8 @@ MonoImporter:
   defaultReferences:
   - quadPrefab: {fileID: 4952421844397126719, guid: a847d4f770ced2a46acdc3f79b704e4a,
       type: 3}
+  - baseMaterial: {fileID: 2100000, guid: 318f15be96ff1454c9766434d070458b, type: 2}
+  - ignoreZMaterial: {fileID: 2100000, guid: cd2894ef7650d6b439ceaffcb75c2e81, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

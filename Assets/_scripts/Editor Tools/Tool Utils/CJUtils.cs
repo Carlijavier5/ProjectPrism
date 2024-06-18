@@ -44,6 +44,12 @@ namespace CJUtils {
             }
         }
 
+        public static Color DefinedGreen {
+            get {
+                return new Vector4(1f, 1.85f, 0.5f, 0.8f);
+            }
+        }
+
         public static Color MidBlue {
             get {
                 return new Vector4(0.75f, 0.9f, 1.0f, 1);
@@ -487,6 +493,30 @@ namespace CJUtils {
                 GUI.Label(rect, content.image);
                 GUILayout.Label(content.text, UIStyles.CenteredLabelBold, options);
             } return rect;
+        }
+        
+        /// <summary>
+        /// Draws a fancy on/off button;
+        /// </summary>
+        public static void OnOffButton(bool toggle, out bool newToggle,
+                                       params GUILayoutOption[] options) {
+            GUI.color = toggle ? UIColors.Green : UIColors.Red;
+            if (GUILayout.Button(toggle ? "On" : "Off", options)) {
+                toggle = !toggle;
+            } GUI.color = Color.white;
+            newToggle = toggle;
+        }
+
+        /// <summary>
+        /// Draws a fancy on/off button;
+        /// </summary>
+        public static void OnOffButton(bool toggle, out bool newToggle, 
+                                       GUIStyle style, params GUILayoutOption[] options) {
+            GUI.color = toggle ? UIColors.Green : UIColors.Red;
+            if (GUILayout.Button(toggle ? "On" : "Off", style, options)) {
+                toggle = !toggle;
+            } GUI.color = Color.white;
+            newToggle = toggle;
         }
 
         /// <summary>

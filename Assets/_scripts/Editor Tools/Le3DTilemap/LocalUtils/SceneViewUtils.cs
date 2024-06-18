@@ -11,7 +11,7 @@ namespace Le3DTilemap {
                                                         Texture2D iconSearch, Texture2D iconPlus)
                                                         where T : ScriptableObject {
             Handles.BeginGUI();
-            using (new EditorGUILayout.HorizontalScope()) {
+            using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
                 GUILayout.FlexibleSpace();
                 using (new EditorGUILayout.VerticalScope()) {
                     GUILayout.FlexibleSpace();

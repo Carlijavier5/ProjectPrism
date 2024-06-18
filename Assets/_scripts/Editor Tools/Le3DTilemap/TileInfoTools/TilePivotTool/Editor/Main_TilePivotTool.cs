@@ -11,6 +11,8 @@ namespace Le3DTilemap {
     [EditorTool("Tile Pivot Tool", typeof(TileInfo))]
     public partial class TilePivotTool : EditorTool {
 
+        private TileInfo Info => target as TileInfo;
+
         private GUIContent toolIcon;
         private GUIContent ToolIcon {
             get => toolIcon ??= new(EditorUtils.FetchIcon("d_ToolHandlePivot"));
@@ -18,29 +20,44 @@ namespace Le3DTilemap {
 
         private DynamicGridSettings settings;
         private DynamicGridQuad gridQuad;
-        private Plane plane;
-        private int depth;
         private Texture2D iconSearch, iconPlus, iconGrip,
-                          iconSettings;
+                          iconSettings, iconMove, iconTurn;
 
         public override void OnActivated() {
+            SceneView.duringSceneGui += OnSceneGUI;
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
             } if (settings is not null) {
                 InitializeLocalGrid();
-            } depth = 0;
+            } ResetWindowProperties();
+            ResetSelection();
+            depth = 0;
             LoadIcons();
         }
 
         public override void OnToolGUI(EditorWindow window) {
-            if (window is not SceneView) return;
+            if (window is not SceneView sceneView) return;
             if (settings == null) {
-                SceneViewUtils.DrawMissingSettingsPrompt(ref settings,
+                SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
                                         "Missing Dynamic Grid Settings",
                                         "New Dynamic Grid Settings",
                                         iconSearch, iconPlus);
                 return;
-            } DrawSceneViewWindowHeader();
+            } HighlightHintTile();
+            Rect firstWindowRect = DrawSceneViewWindowHeader();
+            DrawHintWindow(firstWindowRect);
+        }
+
+        private void OnSceneGUI(SceneView sceneView) {
+            bool mouseOnGUI = settings.sceneGUI.rect
+                              .Contains(Event.current.mousePosition);
+            if (ToolManager.activeToolType != GetType()
+                || !sceneView.hasFocus || settings == null
+                || gridQuad == null || mouseOnGUI) return;
+            DoInputOverrides();
+            DoSelectionInput();
+            DoScrollInput(sceneView);
+            UpdateGridPos(sceneView);
         }
 
         private void InitializeLocalGrid() {
@@ -53,9 +70,17 @@ namespace Le3DTilemap {
                 return;
             } StageUtility.PlaceGameObjectInCurrentStage(gridQuad.gameObject);
             gridQuad.gameObject.hideFlags = HideFlags.NotEditable | HideFlags.DontSaveInEditor;
+            SetGridOrientation(GridOrientation.XZ);
+            ToggleQuad(true);
+            SetGridDiameter(settings.diameter);
+            SetGridThickness(settings.thickness);
+            SetIgnoreZTest(settings.ignoreZTest);
+            SetGridColor(settings.baseColor);
+            UpdateGridDepth();
         }
 
         public override void OnWillBeDeactivated() {
+            SceneView.duringSceneGui -= OnSceneGUI;
             settings = null;
             DestroyImmediate(gridQuad.gameObject);
             Resources.UnloadUnusedAssets();
@@ -66,6 +91,8 @@ namespace Le3DTilemap {
             EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
             EditorUtils.LoadIcon(ref iconGrip, EditorUtils.ICON_VGRIP);
             EditorUtils.LoadIcon(ref iconSettings, EditorUtils.ICON_SETTINGS);
+            EditorUtils.LoadIcon(ref iconMove, "_GridMove");
+            EditorUtils.LoadIcon(ref iconTurn, "_GridTurn");
         }
     }
 }

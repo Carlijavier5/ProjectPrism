@@ -11,9 +11,10 @@ namespace Le3DTilemap {
         private void DrawTileDistribution() {
             switch (settings.drawDistributionScope) {
                 case DrawDistributionScope.Selected:
-                    DrawTileDistribution(Info.SelectedCollider.Center,
-                                         Info.SelectedCollider.Size);
-                    break;
+                    if (Info.SelectedCollider != null) {
+                        DrawTileDistribution(Info.SelectedCollider.Center,
+                                             Info.SelectedCollider.Size);
+                    } break;
                 case DrawDistributionScope.All:
                     foreach (TileCollider collider in Info.Colliders) {
                         DrawTileDistribution(collider.Center, collider.Size);

@@ -54,6 +54,7 @@ namespace Le3DTilemap {
                     } break;
                 case EventType.MouseUp:
                 case EventType.MouseDown:
+                    if (Event.current.button > 0) return;
                     DoPivotSignal(Event.current.type);
                     break;
                 case EventType.Repaint:

@@ -31,6 +31,20 @@ public static class VectorUtils {
     }
 
     /// <summary>
+    /// Isolate a dimension given by a normal vector;
+    /// </summary>
+    public static Vector3 IsolateDimension(this Vector3 vec, Vector3 normal) {
+        return Mult(vec, normal.normalized);
+    }
+
+    /// <summary>
+    /// Remove a dimension given by a normal vector;
+    /// </summary>
+    public static Vector3 RemoveDimension(this Vector3 vec, Vector3 normal) {
+        return vec - vec.IsolateDimension(normal);
+    }
+
+    /// <summary>
     /// Injects a series of points from one array into another forming vector pairs;
     /// </summary>
     /// <param name="srcArr"> Source array; </param>

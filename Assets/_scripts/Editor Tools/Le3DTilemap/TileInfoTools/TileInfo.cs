@@ -42,7 +42,7 @@ namespace Le3DTilemap {
 
         public void HideTransformAndColliders() {
             gameObject.hideFlags = HideFlags.NotEditable;
-            transform.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
+            transform.hideFlags = HideFlags.NotEditable;
             foreach (TileCollider collider in Colliders) {
                 collider.collider.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
             } hideFlags = HideFlags.None;

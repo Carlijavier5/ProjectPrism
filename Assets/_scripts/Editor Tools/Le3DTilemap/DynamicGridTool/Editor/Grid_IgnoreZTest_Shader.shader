@@ -14,7 +14,7 @@ Shader "Unlit/Grid" {
         Cull Off
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
-        ZTest Less
+        ZTest Always
         Pass {
             CGPROGRAM
             #pragma vertex vert

@@ -15,7 +15,7 @@ namespace Le3DTilemap {
 
         private GUIContent toolIcon;
         private GUIContent ToolIcon {
-            get => toolIcon ??= new(EditorUtils.FetchIcon("TileColliderInfo"));
+            get => toolIcon ??= new(EditorUtils.FetchIcon("_TileColliderInfo"));
         } public override GUIContent toolbarIcon => ToolIcon;
 
         private int activeID;
@@ -34,7 +34,8 @@ namespace Le3DTilemap {
             names = new string[26];
             for (int i = 0; i < 26; i++) {
                 names[i] = ((char) (65 + i)).ToString();
-            } activeHandles = null;
+            } showSettings = false;
+            activeHandles = null;
             toolMode = 0;
             Info_OnSelectionChanged();
             ResetSelection();
@@ -65,6 +66,7 @@ namespace Le3DTilemap {
         }
 
         private void DrawSubtoolContent() {
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             switch (toolMode) {
                 case ToolMode.Select:
                     HighlightHintCollider();
@@ -82,7 +84,11 @@ namespace Le3DTilemap {
         }
 
         void OnSceneGUI(SceneView sceneView) {
-            if (!sceneView.hasFocus) return;
+            bool mouseOnGUI = settings.sceneGUI.rect
+                              .Contains(Event.current.mousePosition);
+            if (ToolManager.activeToolType != GetType()
+                || !sceneView.hasFocus || settings == null
+                || mouseOnGUI) return;
             switch (toolMode) {
                 case ToolMode.Select:
                     DoSelectionInput();

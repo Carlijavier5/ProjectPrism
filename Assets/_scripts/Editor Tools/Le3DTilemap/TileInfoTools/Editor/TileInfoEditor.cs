@@ -18,7 +18,8 @@ namespace Le3DTilemap {
         private bool selectionIsInvalid;
 
         private Texture2D iconPlus, iconLess, iconGrip,
-                          iconDone, iconWarn, iconFail;
+                          iconDone, iconWarn, iconFail,
+                          iconPivot;
 
         public override bool RequiresConstantRepaint() => true;
 
@@ -31,6 +32,7 @@ namespace Le3DTilemap {
             EditorUtils.LoadIcon(ref iconDone, EditorUtils.ICON_CHECK_BLUE);
             EditorUtils.LoadIcon(ref iconWarn, EditorUtils.ICON_CHECK_YELLOW);
             EditorUtils.LoadIcon(ref iconFail, EditorUtils.ICON_CHECK_RED);
+            EditorUtils.LoadIcon(ref iconPivot, "d_ToolHandlePivot");
             AssemblyReloadEvents.afterAssemblyReload += AssemblyDisposeCallback;
         }
 
@@ -55,6 +57,25 @@ namespace Le3DTilemap {
             GUIStyle style = new(EditorStyles.helpBox) { margin = new RectOffset(0, 0, 2, 0),
                                                          padding = new RectOffset(8, 8, 8,
                                                          Info.Colliders.Count == 0 ? 8 : 6) };
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
+                GUILayout.Label("Tile Pivot", UIStyles.CenteredLabelBold);
+            } using (new EditorGUILayout.HorizontalScope()) {
+                GUILayout.Label("Position", GUILayout.Width(50));
+                Info.TilePivot = EditorGUILayout.Vector3IntField("", Info.TilePivot,
+                                                                 GUILayout.Width(150));
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("|");
+                GUILayout.FlexibleSpace();
+                bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
+                GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
+                if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
+                    if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
+                    else ToolManager.SetActiveTool<TilePivotTool>();
+                } GUI.backgroundColor = Color.white;
+                EditorGUILayout.Space(0);
+            } EditorGUILayout.GetControlRect(GUILayout.Height(5));
+            GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
+            EditorGUILayout.GetControlRect(GUILayout.Height(5));
             using (var scope = new EditorGUILayout.VerticalScope(style)) {
                 if (Info.Colliders.Count == 0) {
                     GUILayout.Label("Tiles need at least one collider!", EditorStyles.boldLabel);
@@ -64,6 +85,7 @@ namespace Le3DTilemap {
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
                     if (GUILayout.Button(iconPlus, EditorStyles.toolbarButton)) {
                         Info.Add();
+                        Info.HideTransformAndColliders();
                     } EditorGUILayout.Space(0);
                     GUI.enabled = Info.Colliders.Count > 0;
                     if (GUILayout.Button(iconLess, EditorStyles.toolbarButton)) {
@@ -77,8 +99,10 @@ namespace Le3DTilemap {
                 GUILayout.Label("Messages", UIStyles.CenteredLabelBold);
             } GUIStyle paddedBox = new(GUI.skin.box) { padding = new RectOffset(4, 4, 4, 4) };
             using (new EditorGUILayout.VerticalScope(paddedBox)) {
-                GUIStyle hBox = new(UIStyles.HelpBoxLabel) { padding = new RectOffset(4, 4, 4, 4),
-                                                             margin = new RectOffset(4, 4, 4, 4) };
+                GUIStyle hBox = new(UIStyles.HelpBoxLabel) {
+                    padding = new RectOffset(4, 4, 4, 4),
+                    margin = new RectOffset(4, 4, 4, 4)
+                };
                 GUIUtils.DrawCustomHelpBox(" Minimum tile components met. Tilespace is valid!", iconDone, hBox);
                 GUIUtils.DrawCustomHelpBox(" Tile Space is not hashed;", iconWarn, hBox);
             }
