@@ -59,7 +59,11 @@ namespace Le3DTilemap {
                     } else if (Event.current.type == EventType.MouseUp) {
                         if (mouseInRect && willHide) {
                             settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
-                            EditorUtility.SetDirty(settings);
+                            settings.sceneGUI.rect = new Rect(settings.sceneGUI.rect) {
+                                y = settings.sceneGUI.rect.y
+                                + settings.sceneGUI.rect.height * 0.75f
+                                * (settings.sceneGUI.hideContents ? 1 : -1),
+                            }; EditorUtility.SetDirty(settings);
                         } willHide = false;
                     }
                 } if (!settings.sceneGUI.hideContents) DrawContent();

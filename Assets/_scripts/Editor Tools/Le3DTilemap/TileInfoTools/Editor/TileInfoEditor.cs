@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.EditorTools;
+using UnityEditor.SceneManagement;
 using CJUtils;
 
 namespace Le3DTilemap {
@@ -24,6 +25,7 @@ namespace Le3DTilemap {
         public override bool RequiresConstantRepaint() => true;
 
         void OnEnable() {
+            PrefabStage.prefabStageClosing += StageDisposeCallback;
             Info.HideTransformAndColliders();
             Info.EventDispose();
             EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
@@ -47,9 +49,15 @@ namespace Le3DTilemap {
             }; return base.CreateInspectorGUI();
         }
 
-        void OnDisable() => AssemblyDisposeCallback();
+        void OnDisable() {
+            PrefabStage.prefabStageClosing -= StageDisposeCallback;
+            AssemblyDisposeCallback();
+        }
+
+        void StageDisposeCallback(PrefabStage stage) => AssemblyDisposeCallback();
 
         void AssemblyDisposeCallback() {
+            if (Info == null) return;
             Info.EventDispose();
             AssemblyReloadEvents.afterAssemblyReload -= AssemblyDisposeCallback;
         }
@@ -58,22 +66,48 @@ namespace Le3DTilemap {
             GUIStyle style = new(EditorStyles.helpBox) { margin = new RectOffset(0, 0, 2, 0),
                 padding = new RectOffset(8, 8, 8,
                                                          Info.Colliders.Count == 0 ? 8 : 6) };
+            
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
-                GUILayout.Label("Tile Pivot", UIStyles.CenteredLabelBold);
-            } using (new EditorGUILayout.HorizontalScope()) {
-                GUILayout.Label("Position", GUILayout.Width(50));
-                Info.TilePivot = EditorGUILayout.Vector3IntField("", Info.TilePivot,
-                                                                 GUILayout.Width(150));
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("|");
-                GUILayout.FlexibleSpace();
-                bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
-                GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
-                if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
-                    if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
-                    else ToolManager.SetActiveTool<TilePivotTool>();
-                } GUI.backgroundColor = Color.white;
-                EditorGUILayout.Space(0);
+                GUILayout.Label("Tile Anchor", UIStyles.CenteredLabelBold);
+            } if (Info.TileAnchor != null) {
+                GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, 1) };
+                using (new EditorGUILayout.HorizontalScope()) {
+                    EditorGUILayout.Space(10);
+                    GUILayout.Label("Pivot", lStyle, GUILayout.Width(50));
+                    Info.TilePivot = EditorGUILayout.Vector3IntField("", Info.TilePivot,
+                                                                     GUILayout.Width(150));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label("|");
+                    GUILayout.FlexibleSpace();
+                    bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
+                    GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
+                    if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
+                        if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
+                        else ToolManager.SetActiveTool<TilePivotTool>();
+                    } GUI.backgroundColor = Color.white;
+                    EditorGUILayout.Space(10);
+                } using (new EditorGUILayout.HorizontalScope()) {
+                    EditorGUILayout.Space(10);
+                    GUILayout.Label("Rotation", lStyle, GUILayout.Width(50));
+                    Info.TileRotation = EditorGUILayout.Vector3IntField("", Info.TileRotation,
+                                                                     GUILayout.Width(150));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label("|");
+                    GUILayout.FlexibleSpace();
+                    bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
+                    GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
+                    if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
+                        if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
+                        else ToolManager.SetActiveTool<TilePivotTool>();
+                    } GUI.backgroundColor = Color.white;
+                    EditorGUILayout.Space(10);
+                }
+            } else {
+                Info.TileAnchor = EditorGUILayout.ObjectField(Info.TileAnchor, typeof(Transform), true) as Transform;
+                using (var scope = new EditorGUILayout.VerticalScope(style)) {
+                    GUIStyle lStyle = new(EditorStyles.boldLabel) { wordWrap = true };
+                    GUILayout.Label("Anchor transform required to edit worldspace properties!", lStyle);
+                }
             } EditorGUILayout.GetControlRect(GUILayout.Height(5));
             GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
             EditorGUILayout.GetControlRect(GUILayout.Height(5));
@@ -149,9 +183,9 @@ namespace Le3DTilemap {
                                                           : " No colliders detected. Tilespace is invalid!";
                 Texture2D icon = Info.Colliders.Count > 0 ? iconDone : iconFail;
                 GUIUtils.DrawCustomHelpBox(message, icon, hBox);
-                message = Info.Colliders.Count == 0 ? " Instances will be flagged and preserved;"
-                        : Info.PendingHash ? " Tilespace changed. Scheduled auto-rehash;"
-                                           : " Tilespace is hashed and up-to-date;";
+                message = Info.Colliders.Count == 0 ? " Instances will be flagged and preserved"
+                        : Info.PendingHash ? " Tilespace changed. Scheduled auto-rehash"
+                                           : " Tilespace is hashed and up-to-date";
                 icon = Info.Colliders.Count == 0 ? iconFail
                      : Info.PendingHash ? iconWarn : iconDone;
                 GUIUtils.DrawCustomHelpBox(message, icon, hBox);

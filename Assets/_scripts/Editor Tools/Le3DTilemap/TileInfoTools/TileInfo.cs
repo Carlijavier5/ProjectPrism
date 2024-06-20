@@ -15,13 +15,44 @@ namespace Le3DTilemap {
         [SerializeField] private List<TileCollider> colliders;
         public List<TileCollider> Colliders => colliders ??= new();
 
+        [SerializeField] private Transform tileAnchor;
+        public Transform TileAnchor {
+            get => tileAnchor;
+            set {
+                if (tileAnchor != value) {
+                    transform.localPosition = Vector3.zero;
+                    tileAnchor = value;
+                }
+            }
+        }
+
         [SerializeField] private Vector3Int tilePivot;
         public Vector3Int TilePivot {
             get => tilePivot;
             set {
-                if (tilePivot != value) {
+                if (tileAnchor != null
+                    && tilePivot != value) {
                     UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
                     tilePivot = value;
+                    UndoUtils.RecordFullScopeUndo(tileAnchor, "Change Tile Pivot (Transform)");
+                    tileAnchor.localPosition = value;
+                    RecordTilespaceChange();
+                }
+            }
+        }
+
+        [SerializeField] private Vector3Int tileRotation;
+        public Vector3Int TileRotation {
+            get => tileRotation;
+            set {
+                if (tileAnchor != null
+                    && tileRotation != value) {
+                    UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
+                    /*foreach (TileCollider collider in Colliders) {
+                        collider.Pivot += tilePivot - value;
+                    } */tileRotation = value;
+                    UndoUtils.RecordFullScopeUndo(tileAnchor, "Change Tile Pivot (Transform)");
+                    tileAnchor.localEulerAngles = value;
                     RecordTilespaceChange();
                 }
             }
@@ -55,8 +86,8 @@ namespace Le3DTilemap {
 
         public void HideTransformAndColliders() {
             gameObject.SetActive(true);
-            gameObject.hideFlags = HideFlags.NotEditable;
-            transform.hideFlags = HideFlags.NotEditable;
+            gameObject.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
+            transform.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
             foreach (TileCollider collider in Colliders) {
                 collider.collider.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
             } hideFlags = HideFlags.None;
@@ -151,7 +182,7 @@ namespace Le3DTilemap {
                          y <= Mathf.RoundToInt(collider.Center.y + collider.Size.y / 2f - OFFSET); y++) {
                         for (int z = Mathf.RoundToInt(collider.Center.z - collider.Size.z / 2f + OFFSET);
                              z <= Mathf.RoundToInt(collider.Center.z + collider.Size.z / 2f - OFFSET); z++) {
-                            newHash.Add(new Vector3Int(x, y, z) + TilePivot);
+                            newHash.Add(new Vector3Int(x, y, z));
                         }
                     }
                 }

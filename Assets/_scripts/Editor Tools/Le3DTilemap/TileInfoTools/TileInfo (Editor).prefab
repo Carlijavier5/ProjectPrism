@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &5961575853133908927
 GameObject:
-  m_ObjectHideFlags: 8
+  m_ObjectHideFlags: 10
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -20,7 +20,7 @@ GameObject:
   m_IsActive: 1
 --- !u!4 &4252071663936107826
 Transform:
-  m_ObjectHideFlags: 8
+  m_ObjectHideFlags: 10
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -46,17 +46,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliders:
-  - name: 72
+  - name: 65
     info: {fileID: 4428366674542714364}
     collider: {fileID: 2798805131099911587}
     pivot: {x: 0, y: 0, z: 0}
-  tilePivot: {x: 0, y: 0, z: -2}
-  nameHint: 64
+  tilePivot: {x: 0, y: 0, z: 0}
+  nameHint: 2
   tilespace:
     m_keys:
-    - {x: 0, y: 0, z: -2}
-  hashVersion: 4
-  pendingHash: 1
+    - {x: 0, y: 0, z: 0}
+  hashVersion: 0
+  pendingHash: 0
 --- !u!65 &2798805131099911587
 BoxCollider:
   m_ObjectHideFlags: 10

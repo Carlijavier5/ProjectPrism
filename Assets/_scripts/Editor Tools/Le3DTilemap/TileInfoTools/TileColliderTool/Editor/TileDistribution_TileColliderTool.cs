@@ -10,15 +10,27 @@ namespace Le3DTilemap {
 
         private void DrawTileDistribution() {
             switch (settings.drawDistributionScope) {
-                case DrawDistributionScope.Selected:
+                case DrawDistributionScope.Selection:
                     if (Info.SelectedCollider != null) {
                         DrawTileDistribution(Info.SelectedCollider.Center,
                                              Info.SelectedCollider.Size);
                     } break;
-                case DrawDistributionScope.All:
+                case DrawDistributionScope.Colliders:
                     foreach (TileCollider collider in Info.Colliders) {
                         DrawTileDistribution(collider.Center, collider.Size);
                     } break;
+                case DrawDistributionScope.Tilespace:
+                    DrawTileDistribution(Info.Tilespace);
+                    break;
+            }
+        }
+
+        private void DrawTileDistribution(IEnumerable<Vector3Int> tilespace) {
+            if (Event.current.type == EventType.Repaint) {
+                Handles.color = Color.white;
+                foreach (Vector3Int position in tilespace) {
+                    Handles.DrawWireCube(position, Vector3Int.one);
+                }
             }
         }
 
