@@ -25,8 +25,8 @@ namespace Le3DTilemap {
         private void HighlightSelectedCollider() {
             if (Info.SelectedCollider != null) {
                 using (new Handles.DrawingScope(new Vector4(0.392f, 0.533f, 0.917f, 1f))) {
-                    Handles.DrawWireCube(Info.SelectedCollider.Center,
-                                         Info.SelectedCollider.Size);
+                    Vector3 center = Info.transform.TransformPoint(Info.SelectedCollider.Center);
+                    Handles.DrawWireCube(center, Info.SelectedCollider.Size);
                 }
             }
         }
@@ -38,7 +38,8 @@ namespace Le3DTilemap {
                                                          : new Vector4(0, 0, 1, 0.15f);
                 Color outlineColor = selectionIndex >= 0 ? new Vector4(0, 1, 0, 0.5f)
                                                          : new Vector4(1, 1, 0, 0.5f);
-                HandleUtils.DrawOctohedralVolume(hintCollider.center, hintCollider.size,
+                Vector3 center = Info.transform.TransformPoint(hintCollider.center);
+                HandleUtils.DrawOctohedralVolume(center, hintCollider.size,
                                                  surfaceColor, outlineColor);
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             }

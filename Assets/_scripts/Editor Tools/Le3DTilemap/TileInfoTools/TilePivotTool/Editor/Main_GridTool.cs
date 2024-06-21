@@ -25,6 +25,34 @@ namespace Le3DTilemap {
             ResetWindowProperties();
         }
 
+        protected bool HasNullSettings<T>(ref T settings, SceneView sceneView) where T : ScriptableObject {
+            bool missingSettings = gridSettings == null || settings == null;
+            if (missingSettings) {
+                Handles.BeginGUI();
+                using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
+                    GUILayout.FlexibleSpace();
+                    using (new EditorGUILayout.VerticalScope()) {
+                        GUILayout.FlexibleSpace();
+                        if (settings == null) {
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                            SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
+                                                    "Missing Tool Settings",
+                                                    "New Pivot Tool Settings",
+                                                    iconSearch, iconPlus);
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                        } if (gridSettings == null) {
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                            SceneViewUtils.DrawMissingSettingsPrompt(ref gridSettings, sceneView,
+                                                    "Missing Grid Settings",
+                                                    "New Dynamic Grid Settings",
+                                                    iconSearch, iconPlus);
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                        } GUILayout.FlexibleSpace();
+                    } GUILayout.FlexibleSpace();
+                } Handles.BeginGUI();
+            } return missingSettings;
+        }
+
         private void InitializeLocalGrid() {
             gridQuad = FindAnyObjectByType<DynamicGridQuad>(FindObjectsInactive.Include);
             if (gridQuad == null) {
@@ -44,14 +72,14 @@ namespace Le3DTilemap {
             UpdateGridDepth();
         }
 
-        protected virtual void OnSceneGUI(SceneView sceneView) {
-
-        }
+        protected virtual void OnSceneGUI(SceneView sceneView) { }
 
         public override void OnWillBeDeactivated() {
             SceneView.duringSceneGui -= OnSceneGUI;
             gridSettings = null;
-            DestroyImmediate(gridQuad.gameObject);
+            if (gridQuad) {
+                DestroyImmediate(gridQuad.gameObject);
+            }
         }
 
         protected virtual void LoadIcons() {

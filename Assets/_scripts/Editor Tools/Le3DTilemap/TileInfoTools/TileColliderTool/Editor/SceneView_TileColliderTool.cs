@@ -91,17 +91,18 @@ namespace Le3DTilemap {
                 using (new EditorGUILayout.VerticalScope(paddedBox, GUILayout.Height(50))) {
                     if (showSettings) {
                         using (var changeScope = new EditorGUI.ChangeCheckScope()) {
+                            EditorGUIUtility.labelWidth = 0;
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Draw Tile Scope:", GUILayout.Width(100));
+                                GUILayout.Label("Highlight Scope:", GUILayout.Width(97));
                                 GUILayout.FlexibleSpace();
                                 settings.drawDistributionScope = (DrawDistributionScope) EditorGUILayout.EnumPopup(
-                                                                 settings.drawDistributionScope, GUILayout.Width(70));
+                                                                 settings.drawDistributionScope, GUILayout.Width(75));
                             }
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Draw Tile Mode:", GUILayout.Width(100));
+                                GUILayout.Label("Highlight Mode:", GUILayout.Width(97));
                                 GUILayout.FlexibleSpace();
                                 settings.drawDistributionMode = (DrawDistributionMode) EditorGUILayout.EnumPopup(
-                                                                settings.drawDistributionMode, GUILayout.Width(70));
+                                                                settings.drawDistributionMode, GUILayout.Width(75));
                             } if (changeScope.changed) EditorUtility.SetDirty(settings);
                         }
                     } else {

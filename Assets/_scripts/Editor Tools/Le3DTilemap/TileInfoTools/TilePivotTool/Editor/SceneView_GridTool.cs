@@ -7,24 +7,26 @@ namespace Le3DTilemap {
 
     public abstract partial class GridTool {
 
+        protected bool allowDirectGridMode;
         private bool showGridSettings;
-        private bool willHide;
+        private bool willHideGridWindow;
 
         private GridSettingsPage settingsPage;
         private GridOrientation orientation;
 
-        protected void DrawGridWindow(bool hasHint) {
-            Rect firstWindowRect = DrawSceneViewWindowHeader();
-            DrawHintWindow(firstWindowRect, hasHint);
-        }
         private const string GRID_ORIENTATION = "_Orientation";
         private const string GRID_FALLOFF_DIST = "_TDistance";
         private const string GRID_GIRTH = "_LineThickness";
         private const string GRID_COLOR = "_GridColour";
 
-        private Rect DrawSceneViewWindowHeader() {
+        protected void DrawGridWindow(bool hasHint) {
+            Rect firstWindowRect = DrawGridSceneViewHeader();
+            DrawHintWindow(firstWindowRect, hasHint);
+        }
+
+        private Rect DrawGridSceneViewHeader() {
             Handles.BeginGUI();
-            Rect rect = GUILayout.Window(2, gridSettings.sceneGUI.rect, DrawSceneViewWindow,
+            Rect rect = GUILayout.Window(2, gridSettings.sceneGUI.rect, DrawGridSceneViewWindow,
                                          "", EditorStyles.textArea);
             if (!rect.Equals(gridSettings.sceneGUI.rect)) {
                 gridSettings.sceneGUI.rect = rect;
@@ -38,13 +40,13 @@ namespace Le3DTilemap {
             Handles.BeginGUI();
             Rect rect = new(firstWindow) {
                 y = firstWindow.y - 40,
-                height = 30
+                height = 30,
             }; GUILayout.Window(3, rect, DrawHintContent,
                                 "", EditorStyles.textArea);
             Handles.EndGUI();
         }
 
-        private void DrawSceneViewWindow(int controlID) {
+        private void DrawGridSceneViewWindow(int controlID) {
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(208), GUILayout.MinHeight(0))) {
                 using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
                     GUILayout.Space(8);
@@ -72,7 +74,6 @@ namespace Le3DTilemap {
                             if (showGridSettings) settingsPage = 0;
                         } GUILayout.Space(4);
                     } else {
-
                         GUIContent content = new GUIContent(" Move", iconMove, "Move (W)");
                         GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
                         Rect bRect = EditorGUILayout.GetControlRect(false, 14, style);
@@ -88,33 +89,24 @@ namespace Le3DTilemap {
                     }
                     if (mouseInRect && Event.current.type == EventType.MouseDown
                         && Event.current.button == 0) {
-                        willHide = true;
+                        willHideGridWindow = true;
                     } else if (Event.current.type == EventType.MouseDrag) {
-                        willHide = false;
+                        willHideGridWindow = false;
                     } else if (Event.current.type == EventType.MouseUp) {
-                        if (mouseInRect && willHide) {
+                        if (mouseInRect && willHideGridWindow) {
                             gridSettings.sceneGUI.hideContents = !gridSettings.sceneGUI.hideContents;
                             gridSettings.sceneGUI.rect = new Rect(gridSettings.sceneGUI.rect) {
                                 y = gridSettings.sceneGUI.rect.y
                                 + gridSettings.sceneGUI.rect.height * 0.75f
                                 * (gridSettings.sceneGUI.hideContents ? 1 : -1),
                             }; EditorUtility.SetDirty(gridSettings);
-                        } willHide = false;
+                        } willHideGridWindow = false;
                     }
                 } if (!gridSettings.sceneGUI.hideContents) DrawContent();
             } GUI.DragWindow();
         }
 
         protected virtual void DrawHintContent(int controlID) { }
-
-        private void DrawSettingsPageButton(GridSettingsPage page, RectOffset margin) {
-            GUI.backgroundColor = settingsPage == page ? UIColors.DefinedBlue : Color.white;
-            GUIStyle style = new(GUI.skin.button) { margin = margin };
-            if (GUILayout.Button(System.Enum.GetName(typeof(GridSettingsPage), page),
-                                 style, GUILayout.Width(60))) {
-                settingsPage = page;
-            } GUI.backgroundColor = Color.white;
-        }
 
         private void DrawContent() {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox)) {
@@ -127,20 +119,29 @@ namespace Le3DTilemap {
                         GUILayout.FlexibleSpace();
                         using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                             if (showGridSettings) {
-                                DrawSettingsPageButton(GridSettingsPage.View, new RectOffset() { right = 0 });
-                                DrawSettingsPageButton(GridSettingsPage.Options, new RectOffset() { right = 0, left = 0 });
-                                DrawSettingsPageButton(GridSettingsPage.Colors, new RectOffset() { left = 0 });
-                                GUI.enabled = true;
+                                DrawSettingsPageButton(GridSettingsPage.Size, 
+                                                       new RectOffset() { right = 0 },
+                                                       GUILayout.Width(52));
+                                DrawSettingsPageButton(GridSettingsPage.View,
+                                                       new RectOffset() { right = 0, left = 0 },
+                                                       GUILayout.Width(52));
+                                DrawSettingsPageButton(GridSettingsPage.Colors, 
+                                                       new RectOffset() { left = 0 },
+                                                       GUILayout.Width(52));
+                                GUIStyle style = new(GUI.skin.button) { margin = { left = 0 } };
+                                GUILayout.Button(iconPlus, style, GUILayout.Width(24), GUILayout.Height(19));
                             } else {
                                 GUIContent content = new GUIContent(" Move", iconMove, "Move (W)");
                                 GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
-                                Rect rect = EditorGUILayout.GetControlRect(false, 20, style, 
+                                Rect rect = EditorGUILayout.GetControlRect(false, 19, style, 
                                                                            GUILayout.Width(90));
+                                rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
                                 DrawGridModeButton(rect, GridInputMode.Move, content, style);
                                 content = new GUIContent(" Turn", iconTurn, " Turn (R)");
                                 style = new(GUI.skin.button) { margin = { left = 0 } };
-                                rect = EditorGUILayout.GetControlRect(false, 20, style,
+                                rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                       GUILayout.Width(90));
+                                rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
                                 DrawGridModeButton(rect, GridInputMode.Turn, content, style);
                                 GUI.enabled = true;
                                 GUI.backgroundColor = Color.white;
@@ -148,10 +149,11 @@ namespace Le3DTilemap {
                         } GUILayout.FlexibleSpace();
                     } GUIStyle paddedBox = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(6, 6, 6, 6) };
                     using (new EditorGUILayout.VerticalScope(paddedBox, GUILayout.Height(50))) {
+                        GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
                         if (showGridSettings) {
                             using (var changeScope = new EditorGUI.ChangeCheckScope()) {
                                 switch (settingsPage) {
-                                    case GridSettingsPage.View:
+                                    case GridSettingsPage.Size:
                                         using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.Label("Diameter:");
                                             EditorGUIUtility.labelWidth = 0;
@@ -159,32 +161,28 @@ namespace Le3DTilemap {
                                             int size = EditorGUILayout.IntField(gridSettings.diameter,
                                                                                 GUILayout.Width(90));
                                             if (gridSettings.diameter != size) SetGridDiameter(size);
-                                        }
-                                        using (new EditorGUILayout.HorizontalScope()) {
+                                        } using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.Label("Thickness:");
                                             EditorGUIUtility.labelWidth = 0;
                                             GUILayout.FlexibleSpace();
                                             float girth = EditorGUILayout.FloatField(gridSettings.thickness,
                                                                                      GUILayout.Width(90));
                                             if (gridSettings.thickness != girth) SetGridThickness(girth);
-                                        }
-                                        break;
-                                    case GridSettingsPage.Options:
+                                        } break;
+                                    case GridSettingsPage.View:
                                         GUIStyle style = new(GUI.skin.button) { margin = new() };
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Ignore zTest:");
+                                            GUILayout.Label("Ignore zTest:", lStyle);
                                             GUILayout.FlexibleSpace();
                                             GUIUtils.OnOffButton(gridSettings.ignoreZTest, out bool ignoreZTest,
                                                                  style, GUILayout.Width(60));
                                             if (ignoreZTest != gridSettings.ignoreZTest) SetIgnoreZTest(ignoreZTest);
-                                        }
-                                        using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Follow Camera:");
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Follow Camera:", lStyle);
                                             GUILayout.FlexibleSpace();
                                             GUIUtils.OnOffButton(gridSettings.followCamera, out gridSettings.followCamera,
                                                                  style, GUILayout.Width(60));
-                                        }
-                                        break;
+                                        } break;
                                     case GridSettingsPage.Colors:
                                         using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.Label("Base:", GUILayout.Width(35));
@@ -192,22 +190,21 @@ namespace Le3DTilemap {
                                             Color baseColor = EditorGUILayout.ColorField(gridSettings.baseColor,
                                                                                             GUILayout.Width(125));
                                             if (gridSettings.baseColor != baseColor) SetGridColor(baseColor);
-                                        }
-                                        using (new EditorGUILayout.HorizontalScope()) {
+                                        } using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.Label("Hint:", GUILayout.Width(35));
                                             GUILayout.FlexibleSpace();
                                             gridSettings.hintColor = EditorGUILayout.ColorField(gridSettings.hintColor,
                                                                                             GUILayout.Width(125));
-                                        }
-                                        break;
+                                        } break;
                                 }
                                 if (changeScope.changed) EditorUtility.SetDirty(gridSettings);
                             }
                         } else {
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Orientation:");
+                                GUILayout.Label("Orientation:", lStyle);
                                 GUILayout.FlexibleSpace();
-                                GUIStyle style = new(EditorStyles.popup) { alignment = TextAnchor.MiddleCenter };
+                                GUIStyle style = new(EditorStyles.popup) { alignment = TextAnchor.MiddleCenter,
+                                                                           margin = new() };
                                 GridOrientation newOrientation = (GridOrientation) EditorGUILayout.EnumPopup(
                                                                     orientation, style, GUILayout.Width(80));
                                 if (newOrientation != orientation) {
@@ -215,10 +212,11 @@ namespace Le3DTilemap {
                                 }
                             }
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Toggle Grid:");
+                                GUILayout.Label("Toggle Grid:", lStyle);
                                 GUILayout.FlexibleSpace();
+                                GUIStyle style = new(GUI.skin.button) { margin = new() };
                                 GUIUtils.OnOffButton(gridQuad.gameObject.activeSelf,
-                                                     out bool enabled, GUILayout.Width(80));
+                                                     out bool enabled, style, GUILayout.Width(80));
                                 if (gridQuad.gameObject.activeSelf != enabled) ToggleQuad(enabled);
                             }
                         }
@@ -227,12 +225,23 @@ namespace Le3DTilemap {
             }
         }
 
+        private void DrawSettingsPageButton(GridSettingsPage page, RectOffset margin,
+                                            params GUILayoutOption[] options) {
+            GUI.backgroundColor = settingsPage == page ? UIColors.DefinedBlue : Color.white;
+            GUIStyle style = new(GUI.skin.button) { margin = margin };
+            if (GUILayout.Button(System.Enum.GetName(typeof(GridSettingsPage), page),
+                                 style, options)) {
+                settingsPage = page;
+            } GUI.backgroundColor = Color.white;
+        }
+
         private void DrawGridModeButton(Rect rect, GridInputMode mode, 
                                         GUIContent content, GUIStyle style) {
             GUI.backgroundColor = overrideInput == mode ? UIColors.DefinedGreen
                                 : defaultInput == mode ? UIColors.DefinedBlue
                                                        : Color.white;
-            GUI.enabled = overrideInput == 0 || overrideInput == mode;
+            GUI.enabled = overrideInput == 0 && allowDirectGridMode
+                       || overrideInput == mode;
             if (GUI.Button(rect, content, style)) {
                 defaultInput = defaultInput == mode ? GridInputMode.None
                                                     : mode;

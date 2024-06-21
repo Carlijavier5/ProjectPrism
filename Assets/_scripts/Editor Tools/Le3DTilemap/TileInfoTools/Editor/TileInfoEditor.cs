@@ -66,48 +66,47 @@ namespace Le3DTilemap {
             GUIStyle style = new(EditorStyles.helpBox) { margin = new RectOffset(0, 0, 2, 0),
                 padding = new RectOffset(8, 8, 8,
                                                          Info.Colliders.Count == 0 ? 8 : 6) };
-            
+
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
-                GUILayout.Label("Tile Anchor", UIStyles.CenteredLabelBold);
-            } if (Info.TileAnchor != null) {
-                GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, 1) };
-                using (new EditorGUILayout.HorizontalScope()) {
-                    EditorGUILayout.Space(10);
-                    GUILayout.Label("Pivot", lStyle, GUILayout.Width(50));
-                    Info.TilePivot = EditorGUILayout.Vector3IntField("", Info.TilePivot,
-                                                                     GUILayout.Width(150));
-                    GUILayout.FlexibleSpace();
-                    GUILayout.Label("|");
-                    GUILayout.FlexibleSpace();
-                    bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
-                    GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
-                    if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
-                        if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
-                        else ToolManager.SetActiveTool<TilePivotTool>();
-                    } GUI.backgroundColor = Color.white;
-                    EditorGUILayout.Space(10);
-                } using (new EditorGUILayout.HorizontalScope()) {
-                    EditorGUILayout.Space(10);
-                    GUILayout.Label("Rotation", lStyle, GUILayout.Width(50));
-                    Info.TileRotation = EditorGUILayout.Vector3IntField("", Info.TileRotation,
-                                                                     GUILayout.Width(150));
-                    GUILayout.FlexibleSpace();
-                    GUILayout.Label("|");
-                    GUILayout.FlexibleSpace();
-                    bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
-                    GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
-                    if (GUILayout.Button(iconPivot, GUILayout.Width(50), GUILayout.Height(18))) {
-                        if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
-                        else ToolManager.SetActiveTool<TilePivotTool>();
-                    } GUI.backgroundColor = Color.white;
-                    EditorGUILayout.Space(10);
-                }
-            } else {
-                Info.TileAnchor = EditorGUILayout.ObjectField(Info.TileAnchor, typeof(Transform), true) as Transform;
-                using (var scope = new EditorGUILayout.VerticalScope(style)) {
-                    GUIStyle lStyle = new(EditorStyles.boldLabel) { wordWrap = true };
-                    GUILayout.Label("Anchor transform required to edit worldspace properties!", lStyle);
-                }
+                GUILayout.Label("Worldspace Properties", UIStyles.CenteredLabelBold);
+            } using (new EditorGUILayout.HorizontalScope()) {
+                EditorGUILayout.Space(10);
+                GUILayout.Label("Mesh Root");
+                GUILayout.FlexibleSpace();
+                Info.MeshRoot = EditorGUILayout.ObjectField(Info.MeshRoot, typeof(Transform), true) as Transform;
+                EditorGUILayout.Space(10);
+            } EditorGUILayout.GetControlRect(GUILayout.Height(1));
+            using (new EditorGUILayout.HorizontalScope()) {
+                EditorGUILayout.GetControlRect(GUILayout.Width(10), GUILayout.Height(1));
+                GUIUtils.DrawSeparatorLine(UIColors.DarkGray);///EditorGUILayout.GetControlRect(GUILayout.Height(0));
+                EditorGUILayout.GetControlRect(GUILayout.Width(10), GUILayout.Height(1));
+            } GUIStyle oStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, 1) };
+            using (new EditorGUILayout.HorizontalScope()) {
+                EditorGUILayout.Space(10);
+
+                GUILayout.Label("Pivot", oStyle, GUILayout.Width(32));
+                GUILayout.FlexibleSpace();
+                bool hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
+                GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
+                if (GUILayout.Button(iconPivot, GUILayout.Width(65), GUILayout.Height(18))) {
+                    if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
+                    else ToolManager.SetActiveTool<TilePivotTool>();
+                } GUI.backgroundColor = Color.white;
+
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("|");
+                GUILayout.FlexibleSpace();
+
+                GUILayout.Label("Rotation", oStyle, GUILayout.Width(50));
+                GUILayout.FlexibleSpace();
+                hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
+                GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
+                if (GUILayout.Button(iconPivot, GUILayout.Width(65), GUILayout.Height(18))) {
+                    if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
+                    else ToolManager.SetActiveTool<TilePivotTool>();
+                } GUI.backgroundColor = Color.white;
+
+                EditorGUILayout.Space(10);
             } EditorGUILayout.GetControlRect(GUILayout.Height(5));
             GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
             EditorGUILayout.GetControlRect(GUILayout.Height(5));
@@ -200,7 +199,7 @@ namespace Le3DTilemap {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                 GUILayout.Label("Tile Colliders", UIStyles.CenteredLabelBold);
             } GUILayoutOption[] options = Info.Colliders.Count <= 3 ? new GUILayoutOption[] { }
-                                                                    : new[] { GUILayout.MaxHeight(200) };
+                                                                    : new[] { GUILayout.MaxHeight(204) };
             using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos, options)) {
                 scrollPos = scrollScope.scrollPosition;
                 if (mouseInScope && DragAndDrop.objectReferences.Length == 1) {

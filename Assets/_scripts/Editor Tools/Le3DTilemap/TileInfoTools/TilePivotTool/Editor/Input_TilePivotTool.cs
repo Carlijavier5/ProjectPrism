@@ -31,10 +31,10 @@ namespace Le3DTilemap {
                             Handles.DrawWireCube(hintTile, Vector3.one * 0.75f);
                         }
                     }
-                } HandleUtils.DrawDottedOctohedron(Info.TilePivot,
+                } HandleUtils.DrawDottedOctohedron(Info.transform.position,
                                                    Vector3.one, Color.white, 5f);
                 using (new Handles.DrawingScope(Color.red)) {
-                    Handles.SphereHandleCap(0, Info.TilePivot,
+                    Handles.SphereHandleCap(0, Info.transform.position,
                                             Quaternion.identity, 0.1f, EventType.Repaint);
                 }
             }
@@ -65,7 +65,7 @@ namespace Le3DTilemap {
             pendingCast = false;
             Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             plane.Raycast(ray, out float enter);
-            if (enter >= 0) {
+            if (enter >= 0 && enter <= settings.raycastDistance) {
                 hasHint = true;
                 Vector3Int hitTile = ray.GetPoint(enter).Round();
                 switch (eventType) {
@@ -79,7 +79,7 @@ namespace Le3DTilemap {
                     case EventType.MouseUp:
                         if (hasPicked
                             && hitTile == pickedTile) {
-                            Info.TilePivot = pickedTile;
+                            Info.TranslatePivot(pickedTile, false);
                         } ResetSelection();
                         break;
                 }

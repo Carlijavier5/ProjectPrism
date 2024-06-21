@@ -11,28 +11,22 @@ namespace Le3DTilemap {
                                                         Texture2D iconSearch, Texture2D iconPlus)
                                                         where T : ScriptableObject {
             Handles.BeginGUI();
-            using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.VerticalScope()) {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(1))) {
+                GUIUtils.WindowBoxLabel(title);
+                using (new EditorGUILayout.HorizontalScope()) {
                     GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(1))) {
-                        GUIUtils.WindowBoxLabel(title);
-                        using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.FlexibleSpace();
-                            if (GUILayout.Button(new GUIContent("Search Again", iconSearch),
-                                                 GUILayout.Width(150), GUILayout.Height(20))) {
-                                AssetUtils.TryRetrieveAsset(out settings);
-                            } GUILayout.FlexibleSpace();
-                            if (GUILayout.Button(new GUIContent("Create Settings", iconPlus),
-                                                 GUILayout.Width(150), GUILayout.Height(20))) {
-                                settings = AssetUtils.CreateAsset<T>(createPrompt, 
-                                                                     typeof(T).Name);
-                                GUIUtility.ExitGUI();
-                            } GUILayout.FlexibleSpace();
-                        }
+                    if (GUILayout.Button(new GUIContent("Search Again", iconSearch),
+                                            GUILayout.Width(150), GUILayout.Height(20))) {
+                        AssetUtils.TryRetrieveAsset(out settings);
                     } GUILayout.FlexibleSpace();
-                } GUILayout.FlexibleSpace();
-            } Handles.EndGUI();
+                    if (GUILayout.Button(new GUIContent("Create Settings", iconPlus),
+                                            GUILayout.Width(150), GUILayout.Height(20))) {
+                        settings = AssetUtils.CreateAsset<T>(createPrompt, 
+                                                                typeof(T).Name);
+                        GUIUtility.ExitGUI();
+                    } GUILayout.FlexibleSpace();
+                }
+            }
         }
 
         public static void DrawMissingSettingsPrompt<T>(ref T settings, SceneView sceneView,

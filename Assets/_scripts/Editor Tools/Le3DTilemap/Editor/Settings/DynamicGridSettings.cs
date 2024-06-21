@@ -2,7 +2,7 @@
 
 namespace Le3DTilemap {
 
-    public enum GridSettingsPage { View, Options, Colors }
+    public enum GridSettingsPage { Size, View, Colors }
     public enum GridOrientation { XZ = 0, XY = 1, YZ = 2 }
     public enum GridInputMode { None = 0, Move, Turn }
 

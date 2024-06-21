@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,12 +13,15 @@ namespace Le3DTilemap {
             switch (settings.drawDistributionScope) {
                 case DrawDistributionScope.Selection:
                     if (Info.SelectedCollider != null) {
-                        DrawTileDistribution(Info.SelectedCollider.Center,
+                        DrawTileDistribution(Info.transform
+                                             .TransformPoint(Info.SelectedCollider.Center),
                                              Info.SelectedCollider.Size);
                     } break;
                 case DrawDistributionScope.Colliders:
                     foreach (TileCollider collider in Info.Colliders) {
-                        DrawTileDistribution(collider.Center, collider.Size);
+                        DrawTileDistribution(Info.transform
+                                             .TransformPoint(collider.Center), 
+                                             collider.Size);
                     } break;
                 case DrawDistributionScope.Tilespace:
                     DrawTileDistribution(Info.Tilespace);
@@ -26,10 +30,14 @@ namespace Le3DTilemap {
         }
 
         private void DrawTileDistribution(IEnumerable<Vector3Int> tilespace) {
+            System.Span<Vector3> span = new System.Span<Vector3>(tilespace.Select(
+                                                                 (vec) => (Vector3) vec)
+                                                                 .ToArray());
+            Info.transform.TransformPoints(span);
             if (Event.current.type == EventType.Repaint) {
                 Handles.color = Color.white;
-                foreach (Vector3Int position in tilespace) {
-                    Handles.DrawWireCube(position, Vector3Int.one);
+                foreach (Vector3 position in span) {
+                    Handles.DrawWireCube(position.Round(), Vector3Int.one);
                 }
             }
         }

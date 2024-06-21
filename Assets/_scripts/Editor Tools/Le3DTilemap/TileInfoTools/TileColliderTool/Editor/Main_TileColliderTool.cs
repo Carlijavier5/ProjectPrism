@@ -48,7 +48,7 @@ namespace Le3DTilemap {
                 toolMode = ToolMode.Select;
             } else if (activeHandles == null
                        || activeHandles.collider != Info.SelectedCollider) {
-                activeHandles = new (Info.SelectedCollider);
+                activeHandles = new (Info.transform, Info.SelectedCollider);
             } ResetPivot();
         }
 

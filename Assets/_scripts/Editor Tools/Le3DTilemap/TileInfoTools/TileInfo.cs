@@ -15,46 +15,25 @@ namespace Le3DTilemap {
         [SerializeField] private List<TileCollider> colliders;
         public List<TileCollider> Colliders => colliders ??= new();
 
-        [SerializeField] private Transform tileAnchor;
-        public Transform TileAnchor {
-            get => tileAnchor;
+        [SerializeField] private Transform meshRoot;
+        public Transform MeshRoot {
+            get => meshRoot;
             set {
-                if (tileAnchor != value) {
-                    transform.localPosition = Vector3.zero;
-                    tileAnchor = value;
+                if (meshRoot != value) {
+                    UndoUtils.RecordScopeUndo(this, "Update Root Mesh (TileInfo)");
+                    meshRoot = value;
                 }
             }
         }
 
-        [SerializeField] private Vector3Int tilePivot;
-        public Vector3Int TilePivot {
-            get => tilePivot;
-            set {
-                if (tileAnchor != null
-                    && tilePivot != value) {
-                    UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
-                    tilePivot = value;
-                    UndoUtils.RecordFullScopeUndo(tileAnchor, "Change Tile Pivot (Transform)");
-                    tileAnchor.localPosition = value;
-                    RecordTilespaceChange();
-                }
-            }
-        }
-
-        [SerializeField] private Vector3Int tileRotation;
-        public Vector3Int TileRotation {
-            get => tileRotation;
-            set {
-                if (tileAnchor != null
-                    && tileRotation != value) {
-                    UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
-                    /*foreach (TileCollider collider in Colliders) {
-                        collider.Pivot += tilePivot - value;
-                    } */tileRotation = value;
-                    UndoUtils.RecordFullScopeUndo(tileAnchor, "Change Tile Pivot (Transform)");
-                    tileAnchor.localEulerAngles = value;
-                    RecordTilespaceChange();
-                }
+        public void TranslatePivot(Vector3Int diff, bool translateMesh) {
+            diff = transform.InverseTransformPoint(diff).Round();
+            UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
+            foreach (TileCollider collider in Colliders) {
+                collider.Pivot -= diff;
+            } RecordTilespaceChange();
+            if (meshRoot && translateMesh) {
+                meshRoot.position -= diff;
             }
         }
 

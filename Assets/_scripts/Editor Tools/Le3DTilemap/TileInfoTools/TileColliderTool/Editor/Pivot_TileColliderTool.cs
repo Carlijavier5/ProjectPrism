@@ -33,11 +33,12 @@ namespace Le3DTilemap {
                             Handles.DrawWireCube(center, Vector3.one * 0.75f);
                         }
                     }
-                } HandleUtils.DrawDottedOctohedron(Info.SelectedCollider.Pivot,
-                                                   Vector3.one, Color.white, 5f);
+                } Vector3Int pivot = Info.transform
+                                     .TransformPoint(Info.SelectedCollider.Pivot).Round();
+                HandleUtils.DrawDottedOctohedron(pivot, Vector3.one, Color.white, 5f);
                 using (new Handles.DrawingScope(Color.red)) {
-                    Handles.SphereHandleCap(0, Info.SelectedCollider.Pivot,
-                                        Quaternion.identity, 0.1f, EventType.Repaint);
+                    Handles.SphereHandleCap(0, pivot, Quaternion.identity, 
+                                            0.1f, EventType.Repaint);
                 }
             }
         }
@@ -88,7 +89,9 @@ namespace Le3DTilemap {
                     case EventType.MouseUp:
                         if (pivotSelected) {
                             toolMode = ToolMode.Move;
-                            Info.SelectedCollider.ShiftPivot(potentialPivot);
+                            Info.SelectedCollider
+                                .ShiftPivot(Info.transform
+                                .InverseTransformPoint(potentialPivot).Round());
                         } ResetPivot();
                         RaycastCD = 0.5f;
                         break;

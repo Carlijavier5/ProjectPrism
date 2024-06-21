@@ -9,36 +9,38 @@ namespace Le3DTilemap {
         private class ColliderHandles {
             public readonly TileCollider collider;
             private readonly ArrowHandle[] arrowHandles;
+            private readonly Transform info;
 
-            public ColliderHandles(TileCollider collider) {
+            public ColliderHandles(Transform info, TileCollider collider) {
                 this.collider = collider;
+                this.info = info;
                 arrowHandles = new[] { new ArrowHandle(collider, GUIUtility.GetControlID(10, FocusType.Keyboard),
-                                                       Vector3Int.left, Handles.xAxisColor),
+                                                       info, Vector3Int.left, Handles.xAxisColor),
                                        new ArrowHandle(collider, GUIUtility.GetControlID(11, FocusType.Keyboard),
-                                                       Vector3Int.right, Handles.xAxisColor),
+                                                       info, Vector3Int.right, Handles.xAxisColor),
                                        new ArrowHandle(collider, GUIUtility.GetControlID(12, FocusType.Keyboard),
-                                                       Vector3Int.up, Handles.yAxisColor),
+                                                       info, Vector3Int.up, Handles.yAxisColor),
                                        new ArrowHandle(collider, GUIUtility.GetControlID(13, FocusType.Keyboard),
-                                                       Vector3Int.down, Handles.yAxisColor),
+                                                       info, Vector3Int.down, Handles.yAxisColor),
                                        new ArrowHandle(collider, GUIUtility.GetControlID(14, FocusType.Keyboard),
-                                                       Vector3Int.back, Handles.zAxisColor),
+                                                       info, Vector3Int.back, Handles.zAxisColor),
                                        new ArrowHandle(collider, GUIUtility.GetControlID(15, FocusType.Keyboard),
-                                                       Vector3Int.forward, Handles.zAxisColor) };
+                                                       info, Vector3Int.forward, Handles.zAxisColor) };
             }
 
             public void DoHandles(ref int activeID, ToolMode toolMode) {
                 if (collider == null || collider.collider == null) return;
                 switch (toolMode) {
                     case ToolMode.Move:
-                        Vector3Int pos = Handles.DoPositionHandle(collider.Pivot, Quaternion.identity).Round();
-                        if (pos != collider.Pivot) {
-                            collider.Pivot = pos;
+                        Vector3 pivot = info.TransformPoint(collider.Pivot);
+                        Vector3 pos = Handles.DoPositionHandle(pivot, Quaternion.identity);
+                        Vector3Int newPivot = info.InverseTransformPoint(pos).Round();
+                        if (newPivot != collider.Pivot) {
+                            collider.Pivot = newPivot;
                             CenterHandles();
                         } break;
                     case ToolMode.Scale:
                         foreach (ArrowHandle handle in arrowHandles) handle.DoHandle(ref activeID);
-                        break;
-                    case ToolMode.Pivot:
                         break;
                 }
             }
@@ -61,15 +63,17 @@ namespace Le3DTilemap {
             private const float OFFSET = 0.5f;
             private readonly TileCollider collider;
             private readonly int id;
+            private readonly Transform info;
             private readonly Vector3Int normal;
             private readonly Color color;
             private Vector3 mousePos;
             private Vector3 pos;
 
             public ArrowHandle(TileCollider collider, int id,
-                                Vector3Int normal, Color color) {
+                               Transform info, Vector3Int normal, Color color) {
                 this.collider = collider;
                 this.id = id;
+                this.info = info;
                 this.normal = normal;
                 this.color = color;
                 CenterPos();
@@ -99,7 +103,8 @@ namespace Le3DTilemap {
             }
 
             public void CenterPos() {
-                pos = collider.Center + (Vector3) normal * OFFSET
+                Vector3 center = info.TransformPoint(collider.Center);
+                pos = center + (Vector3) normal * OFFSET
                       + VectorUtils.Mult((Vector3) collider.Size / 2f, normal);
             }
 
@@ -107,7 +112,8 @@ namespace Le3DTilemap {
                 /// Isolate normal axis;
                 pos = VectorUtils.Mult(pos, normal.Abs());
                 /// Remove normal axis from collider pivot;
-                Vector3 center = collider.Center - VectorUtils.Mult(collider.Center, normal.Abs());
+                Vector3 center = info.TransformPoint(collider.Center);
+                center -= VectorUtils.Mult(center, normal.Abs());
                 /// New pos preserves the normal axis and inherits pivot values;
                 pos += center;
             }

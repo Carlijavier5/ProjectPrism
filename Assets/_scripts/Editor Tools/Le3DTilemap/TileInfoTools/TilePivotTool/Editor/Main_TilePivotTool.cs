@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.EditorTools;
-using UnityEditor.SceneManagement;
 using CJUtils;
 
 namespace Le3DTilemap {
 
     [EditorTool("Tile Pivot Tool", typeof(TileInfo))]
     public partial class TilePivotTool : GridTool {
+
+        private TilePivotToolSettings settings;
 
         private TileInfo Info => target as TileInfo;
 
@@ -20,34 +21,38 @@ namespace Le3DTilemap {
 
         public override void OnActivated() {
             base.OnActivated();
-            ResetSelection();
+            if (settings is null) {
+                AssetUtils.TryRetrieveAsset(out settings);
+            } ResetSelection();
+            allowDirectGridMode = true;
         }
 
         public override void OnToolGUI(EditorWindow window) {
             if (window is not SceneView sceneView) return;
-            if (gridSettings == null) {
-                SceneViewUtils.DrawMissingSettingsPrompt(ref gridSettings, sceneView,
-                                        "Missing Dynamic Grid Settings",
-                                        "New Dynamic Grid Settings",
-                                        iconSearch, iconPlus);
-                return;
-            } DrawGridWindow(true);
+            if (HasNullSettings(ref settings, sceneView)) return;
+            DrawGridWindow(true);
+            DrawSceneViewWindowHeader();
             HighlightHintTile();
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
-            bool mouseOnGUI = gridSettings.sceneGUI.rect
-                              .Contains(Event.current.mousePosition);
             if (ToolManager.activeToolType != GetType()
-                || !sceneView.hasFocus || gridSettings == null
-                || gridQuad == null || mouseOnGUI) return;
-            DoInputOverrides();
+                || !sceneView.hasFocus || gridSettings == null 
+                || settings == null || gridQuad == null) return;
+            if (gridSettings.sceneGUI.rect
+                .Contains(Event.current.mousePosition)
+                || settings.sceneGUI.rect
+                .Contains(Event.current.mousePosition)) {
+                hasHint = false;
+                return;
+            } DoInputOverrides();
             DoSelectionInput();
             DoScrollInput(sceneView);
         }
 
         public override void OnWillBeDeactivated() {
             base.OnWillBeDeactivated();
+            settings = null;
             Resources.UnloadUnusedAssets();
         }
     }
