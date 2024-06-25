@@ -84,11 +84,10 @@ namespace Le3DTilemap {
         }
 
         void OnSceneGUI(SceneView sceneView) {
-            bool mouseOnGUI = settings.sceneGUI.rect
-                              .Contains(Event.current.mousePosition);
             if (ToolManager.activeToolType != GetType()
                 || !sceneView.hasFocus || settings == null
-                || mouseOnGUI) return;
+                || settings.sceneGUI.rect
+                   .Contains(Event.current.mousePosition)) return;
             switch (toolMode) {
                 case ToolMode.Select:
                     DoSelectionInput();

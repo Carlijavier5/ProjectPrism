@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using CJUtils;
@@ -47,6 +47,7 @@ namespace Le3DTilemap {
         }
 
         private void DrawGridSceneViewWindow(int controlID) {
+            if (!gridSettings) return;
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(208), GUILayout.MinHeight(0))) {
                 using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
                     GUILayout.Space(8);
@@ -119,17 +120,37 @@ namespace Le3DTilemap {
                         GUILayout.FlexibleSpace();
                         using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
                             if (showGridSettings) {
-                                DrawSettingsPageButton(GridSettingsPage.Size, 
-                                                       new RectOffset() { right = 0 },
-                                                       GUILayout.Width(52));
-                                DrawSettingsPageButton(GridSettingsPage.View,
-                                                       new RectOffset() { right = 0, left = 0 },
-                                                       GUILayout.Width(52));
-                                DrawSettingsPageButton(GridSettingsPage.Colors, 
-                                                       new RectOffset() { left = 0 },
-                                                       GUILayout.Width(52));
-                                GUIStyle style = new(GUI.skin.button) { margin = { left = 0 } };
-                                GUILayout.Button(iconPlus, style, GUILayout.Width(24), GUILayout.Height(19));
+                                GUIStyle style = new(GUI.skin.button) { margin = { left = 0 },
+                                                                        contentOffset = new Vector2(0, -1),
+                                                                        fontSize = 10 };
+                                if ((int) settingsPage < 2) {
+                                    DrawSettingsPageButton(GridSettingsPage.Shortcuts,
+                                                           new RectOffset() { right = 0 },
+                                                           GUILayout.Width(78));
+                                    DrawSettingsPageButton(GridSettingsPage.Raycasts,
+                                                           new RectOffset() { left = 0 },
+                                                           GUILayout.Width(78));
+                                    if (GUILayout.Button("▶", style, 
+                                        GUILayout.Width(24), GUILayout.Height(19))) {
+                                        settingsPage = GridSettingsPage.Size;
+                                    }
+                                } else {
+                                    style = new(GUI.skin.button) { margin = { right = 0 },
+                                                                   fontSize = 9 };
+                                    if (GUILayout.Button("◀", style,
+                                        GUILayout.Width(24), GUILayout.Height(19))) {
+                                        settingsPage = GridSettingsPage.Shortcuts;
+                                    }
+                                    DrawSettingsPageButton(GridSettingsPage.Size, 
+                                                           new RectOffset() { right = 0 },
+                                                           GUILayout.Width(52));
+                                    DrawSettingsPageButton(GridSettingsPage.View,
+                                                           new RectOffset() { right = 0, left = 0 },
+                                                           GUILayout.Width(52));
+                                    DrawSettingsPageButton(GridSettingsPage.Colors, 
+                                                           new RectOffset() { left = 0 },
+                                                           GUILayout.Width(52));
+                                }
                             } else {
                                 GUIContent content = new GUIContent(" Move", iconMove, "Move (W)");
                                 GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
@@ -153,6 +174,35 @@ namespace Le3DTilemap {
                         if (showGridSettings) {
                             using (var changeScope = new EditorGUI.ChangeCheckScope()) {
                                 switch (settingsPage) {
+                                    case GridSettingsPage.Shortcuts:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.FlexibleSpace();
+                                            GUIStyle nStyle = new(GUI.skin.label) { margin = { left = 0, right = 0 },
+                                                                                    fontStyle = FontStyle.Italic,
+                                                                                    contentOffset = new Vector2(0, -1) };
+                                            Rect rect = EditorGUILayout.GetControlRect(false, 17, nStyle, 
+                                                                                       GUILayout.Width(20));
+                                            rect = new(rect) { y = rect.y - 4, height = rect.height + 6 };
+                                            GUI.Label(rect, iconSettings);
+                                            GUILayout.Label("Keybindings Editor", nStyle);
+                                            GUILayout.FlexibleSpace();
+                                        } if (GUILayout.Button("Launch")) {
+
+                                        } break;
+                                    case GridSettingsPage.Raycasts:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("Input Distance:");
+                                            EditorGUIUtility.labelWidth = 0;
+                                            GUILayout.FlexibleSpace();
+                                            gridSettings.raycastDistance = EditorGUILayout.IntField(gridSettings
+                                                                           .raycastDistance, GUILayout.Width(75));
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            GUILayout.Label("CD Multiplier:");
+                                            EditorGUIUtility.labelWidth = 0;
+                                            GUILayout.FlexibleSpace();
+                                            gridSettings.raycastCDMult = EditorGUILayout.DoubleField(gridSettings
+                                                                         .raycastCDMult, GUILayout.Width(75));
+                                        } break;
                                     case GridSettingsPage.Size:
                                         using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.Label("Diameter:");
@@ -196,8 +246,7 @@ namespace Le3DTilemap {
                                             gridSettings.hintColor = EditorGUILayout.ColorField(gridSettings.hintColor,
                                                                                             GUILayout.Width(125));
                                         } break;
-                                }
-                                if (changeScope.changed) EditorUtility.SetDirty(gridSettings);
+                                } if (changeScope.changed) EditorUtility.SetDirty(gridSettings);
                             }
                         } else {
                             using (new EditorGUILayout.HorizontalScope()) {

@@ -57,11 +57,7 @@ namespace Le3DTilemap {
                     using (new EditorGUILayout.HorizontalScope()) {
 
                     } using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                        using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Input Distance:");
-                            settings.raycastDistance = EditorGUILayout.IntField(settings.raycastDistance,
-                                                                                GUILayout.Width(75));
-                        } if (changeScope.changed) EditorUtility.SetDirty(settings);
+                        
                     }
                 }
             }

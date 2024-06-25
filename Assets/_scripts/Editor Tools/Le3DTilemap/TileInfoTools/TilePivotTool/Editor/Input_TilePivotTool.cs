@@ -46,7 +46,7 @@ namespace Le3DTilemap {
                     if (RaycastCD > 0) {
                         pendingCast = true;
                     } else {
-                        RaycastCD = 0.005f;
+                        RaycastCD = gridSettings.raycastCDMult * 0.005f;
                         DoSelectionSignal(EventType.MouseMove);
                     } break;
                 case EventType.MouseUp:
@@ -65,7 +65,7 @@ namespace Le3DTilemap {
             pendingCast = false;
             Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             plane.Raycast(ray, out float enter);
-            if (enter >= 0 && enter <= settings.raycastDistance) {
+            if (enter >= 0 && enter <= gridSettings.raycastDistance) {
                 hasHint = true;
                 Vector3Int hitTile = ray.GetPoint(enter).Round();
                 switch (eventType) {

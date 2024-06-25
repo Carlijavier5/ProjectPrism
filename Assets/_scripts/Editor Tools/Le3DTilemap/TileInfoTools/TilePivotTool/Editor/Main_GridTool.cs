@@ -37,14 +37,14 @@ namespace Le3DTilemap {
                             EditorGUILayout.GetControlRect(GUILayout.Height(1));
                             SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
                                                     "Missing Tool Settings",
-                                                    "New Pivot Tool Settings",
+                                                    "New Tool Settings",
                                                     iconSearch, iconPlus);
                             EditorGUILayout.GetControlRect(GUILayout.Height(1));
                         } if (gridSettings == null) {
                             EditorGUILayout.GetControlRect(GUILayout.Height(1));
                             SceneViewUtils.DrawMissingSettingsPrompt(ref gridSettings, sceneView,
                                                     "Missing Grid Settings",
-                                                    "New Dynamic Grid Settings",
+                                                    "New Grid Settings",
                                                     iconSearch, iconPlus);
                             EditorGUILayout.GetControlRect(GUILayout.Height(1));
                         } GUILayout.FlexibleSpace();

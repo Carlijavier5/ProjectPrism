@@ -22,7 +22,8 @@ namespace Le3DTilemap {
         } protected bool pendingCast;
 
         protected void DoScrollInput(SceneView sceneView) {
-            if (Event.current.type == EventType.ScrollWheel) {
+            if (Event.current.type == EventType.ScrollWheel
+                && ((int) defaultInput > 0 || (int) overrideInput > 0)) {
                 if (WheelCD < 0) {
                     DoOffsetScroll(sceneView, Event.current.delta.y);
                 } Event.current.Use();
