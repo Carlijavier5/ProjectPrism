@@ -10,6 +10,7 @@ namespace Le3DTilemap {
         protected bool allowDirectGridMode;
         private bool showGridSettings;
         private bool willHideGridWindow;
+        private float gridHeightDiff;
 
         private GridSettingsPage settingsPage;
         private GridOrientation orientation;
@@ -95,11 +96,13 @@ namespace Le3DTilemap {
                         willHideGridWindow = false;
                     } else if (Event.current.type == EventType.MouseUp) {
                         if (mouseInRect && willHideGridWindow) {
-                            gridSettings.sceneGUI.hideContents = !gridSettings.sceneGUI.hideContents;
+                            bool hide = gridSettings.sceneGUI.hideContents = !gridSettings.sceneGUI.hideContents;
+                            if (gridSettings.sceneGUI.hideContents) {
+                                gridHeightDiff = gridSettings.sceneGUI.rect.height * 0.7f;
+                            } float diffSign = hide ? 1 : -1;
                             gridSettings.sceneGUI.rect = new Rect(gridSettings.sceneGUI.rect) {
-                                y = gridSettings.sceneGUI.rect.y
-                                + gridSettings.sceneGUI.rect.height * 0.75f
-                                * (gridSettings.sceneGUI.hideContents ? 1 : -1),
+                                y = gridSettings.sceneGUI.rect.y + gridHeightDiff * diffSign,
+                                height = gridSettings.sceneGUI.rect.height - gridHeightDiff * diffSign,
                             }; EditorUtility.SetDirty(gridSettings);
                         } willHideGridWindow = false;
                     }

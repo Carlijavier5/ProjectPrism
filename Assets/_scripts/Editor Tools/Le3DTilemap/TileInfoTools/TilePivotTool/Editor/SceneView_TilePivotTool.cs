@@ -8,6 +8,7 @@ namespace Le3DTilemap {
     public partial class TilePivotTool {
 
         private bool willHide;
+        private float heightDiff;
 
         private void DrawSceneViewWindowHeader() {
             Handles.BeginGUI();
@@ -38,11 +39,13 @@ namespace Le3DTilemap {
                         willHide = false;
                     } else if (Event.current.type == EventType.MouseUp) {
                         if (mouseInRect && willHide) {
-                            settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
+                            bool hide = settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
+                            if (settings.sceneGUI.hideContents) {
+                                heightDiff = settings.sceneGUI.rect.height * 0.7f;
+                            } float diffSign = hide ? 1 : -1;
                             settings.sceneGUI.rect = new Rect(settings.sceneGUI.rect) {
-                                y = settings.sceneGUI.rect.y
-                                + settings.sceneGUI.rect.height * 0.66f
-                                * (settings.sceneGUI.hideContents ? 1 : -1),
+                                y = settings.sceneGUI.rect.y + heightDiff * diffSign,
+                                height = settings.sceneGUI.rect.height - heightDiff * diffSign,
                             }; EditorUtility.SetDirty(settings);
                         } willHide = false;
                     }
@@ -54,10 +57,20 @@ namespace Le3DTilemap {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox)) {
                 GUIStyle paddedBox = new GUIStyle(EditorStyles.helpBox) { padding = new RectOffset(6, 6, 6, 6) };
                 using (new EditorGUILayout.VerticalScope(paddedBox, GUILayout.Height(50))) {
-                    using (new EditorGUILayout.HorizontalScope()) {
-
-                    } using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                        
+                    using (var changeScope = new EditorGUI.ChangeCheckScope()) {
+                        GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
+                        GUIStyle style = new(GUI.skin.button) { margin = new() };
+                        using (new EditorGUILayout.HorizontalScope()) {
+                            GUILayout.Label("Move Colliders", lStyle);
+                            GUILayout.FlexibleSpace();
+                            GUIUtils.OnOffButton(settings.movesColliders, out settings.movesColliders,
+                                                 style, GUILayout.Width(60));
+                        } using (new EditorGUILayout.HorizontalScope()) {
+                            GUILayout.Label("Move Mesh", lStyle);
+                            GUILayout.FlexibleSpace();
+                            GUIUtils.OnOffButton(settings.movesMesh, out settings.movesMesh,
+                                                 style, GUILayout.Width(60));
+                        } if (changeScope.changed) EditorUtility.SetDirty(settings);
                     }
                 }
             }
