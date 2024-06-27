@@ -20,16 +20,17 @@ namespace Le3DTilemap {
         private const string GRID_GIRTH = "_LineThickness";
         private const string GRID_COLOR = "_GridColour";
 
-        protected void DrawGridWindow(bool hasHint) {
-            Rect firstWindowRect = DrawGridSceneViewHeader();
+        protected void DrawGridWindow(SceneView sceneView, bool hasHint) {
+            Rect firstWindowRect = DrawGridSceneViewHeader(sceneView);
             DrawHintWindow(firstWindowRect, hasHint);
         }
 
-        private Rect DrawGridSceneViewHeader() {
+        private Rect DrawGridSceneViewHeader(SceneView sceneView) {
             Handles.BeginGUI();
             Rect rect = GUILayout.Window(2, gridSettings.sceneGUI.rect, DrawGridSceneViewWindow,
                                          "", EditorStyles.textArea);
             if (!rect.Equals(gridSettings.sceneGUI.rect)) {
+                rect = EditorUtils.PreventWindowOverflow(sceneView.position, rect);
                 gridSettings.sceneGUI.rect = rect;
                 EditorUtility.SetDirty(gridSettings);
             } Handles.EndGUI();
@@ -98,7 +99,7 @@ namespace Le3DTilemap {
                         if (mouseInRect && willHideGridWindow) {
                             bool hide = gridSettings.sceneGUI.hideContents = !gridSettings.sceneGUI.hideContents;
                             if (gridSettings.sceneGUI.hideContents) {
-                                gridHeightDiff = gridSettings.sceneGUI.rect.height * 0.7f;
+                                gridHeightDiff = gridSettings.sceneGUI.rect.height * 0.715f;
                             } float diffSign = hide ? 1 : -1;
                             gridSettings.sceneGUI.rect = new Rect(gridSettings.sceneGUI.rect) {
                                 y = gridSettings.sceneGUI.rect.y + gridHeightDiff * diffSign,

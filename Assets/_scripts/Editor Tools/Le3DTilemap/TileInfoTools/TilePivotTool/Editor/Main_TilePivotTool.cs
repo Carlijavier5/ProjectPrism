@@ -30,8 +30,8 @@ namespace Le3DTilemap {
         public override void OnToolGUI(EditorWindow window) {
             if (window is not SceneView sceneView) return;
             if (HasNullSettings(ref settings, sceneView)) return;
-            DrawGridWindow(true);
-            DrawSceneViewWindowHeader();
+            DrawGridWindow(sceneView, true);
+            DrawSceneViewWindowHeader(sceneView);
             HighlightHintTile();
         }
 

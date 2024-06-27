@@ -26,13 +26,16 @@ namespace Le3DTilemap {
             }
         }
 
-        public void TranslatePivot(Vector3Int diff, bool translateMesh) {
+        public void TranslatePivot(Vector3Int diff, bool translateColliders,
+                                   bool translateMesh) {
             diff = transform.InverseTransformPoint(diff).Round();
             UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
-            foreach (TileCollider collider in Colliders) {
-                collider.Pivot -= diff;
-            } RecordTilespaceChange();
-            if (meshRoot && translateMesh) {
+            if (translateColliders) {
+                foreach (TileCollider collider in Colliders) {
+                    collider.Pivot -= diff;
+                } RecordTilespaceChange();
+            } if (meshRoot && translateMesh) {
+                UndoUtils.RecordScopeUndo(meshRoot, "Change Tile Pivot (Transform)");
                 meshRoot.position -= diff;
             }
         }

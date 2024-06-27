@@ -775,6 +775,19 @@ namespace CJUtils {
         }
 
         /// <summary>
+        /// Return a rect within the bounds of a view rect to prevent window overflow;
+        /// </summary>
+        /// <param name="view"> Rect of the View window; </param>
+        /// <param name="rect"> Rect to keep within bounds; </param>
+        /// <returns> New rect within the bounds of the view rect; </returns>
+        public static Rect PreventWindowOverflow(Rect view, Rect rect) {
+            return new Rect(rect) {
+                x = Mathf.Min(view.width - rect.width, Mathf.Max(0, rect.x)),
+                y = Mathf.Min(view.height - rect.height, Mathf.Max(0, rect.y)),
+            };
+        }
+
+        /// <summary>
         /// Opens and/or focuses the Project Window;
         /// </summary>
         public static void OpenProjectWindow() {

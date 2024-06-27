@@ -10,11 +10,12 @@ namespace Le3DTilemap {
         private bool willHide;
         private float heightDiff;
 
-        private void DrawSceneViewWindowHeader() {
+        private void DrawSceneViewWindowHeader(SceneView sceneView) {
             Handles.BeginGUI();
             Rect rect = GUILayout.Window(4, settings.sceneGUI.rect, DrawSceneViewWindow,
                                          "", EditorStyles.textArea);
             if (!rect.Equals(settings.sceneGUI.rect)) {
+                rect = EditorUtils.PreventWindowOverflow(sceneView.position, rect);
                 settings.sceneGUI.rect = rect;
                 EditorUtility.SetDirty(settings);
             } Handles.EndGUI();
@@ -41,7 +42,7 @@ namespace Le3DTilemap {
                         if (mouseInRect && willHide) {
                             bool hide = settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
                             if (settings.sceneGUI.hideContents) {
-                                heightDiff = settings.sceneGUI.rect.height * 0.7f;
+                                heightDiff = settings.sceneGUI.rect.height * 0.63f;
                             } float diffSign = hide ? 1 : -1;
                             settings.sceneGUI.rect = new Rect(settings.sceneGUI.rect) {
                                 y = settings.sceneGUI.rect.y + heightDiff * diffSign,
@@ -61,15 +62,23 @@ namespace Le3DTilemap {
                         GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
                         GUIStyle style = new(GUI.skin.button) { margin = new() };
                         using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Move Colliders", lStyle);
+                            GUILayout.Label("Move Colliders:", lStyle);
                             GUILayout.FlexibleSpace();
                             GUIUtils.OnOffButton(settings.movesColliders, out settings.movesColliders,
-                                                 style, GUILayout.Width(60));
+                                                 style, GUILayout.Width(65));
                         } using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Move Mesh", lStyle);
+                            GUI.enabled = Info.MeshRoot != null;
+                            GUILayout.Label("Move Mesh:", lStyle);
                             GUILayout.FlexibleSpace();
-                            GUIUtils.OnOffButton(settings.movesMesh, out settings.movesMesh,
-                                                 style, GUILayout.Width(60));
+                            if (Info.MeshRoot != null) {
+                                GUIUtils.OnOffButton(settings.movesMesh, out settings.movesMesh,
+                                                     style, GUILayout.Width(65));
+                            } else {
+                                Rect rect = EditorGUILayout.GetControlRect(false, 19,
+                                                                           UIStyles.TextBoxLabel,
+                                                                           GUILayout.Width(65));
+                                GUI.Label(rect, "Unassigned", UIStyles.TextBoxLabel);
+                            } GUI.enabled = true;
                         } if (changeScope.changed) EditorUtility.SetDirty(settings);
                     }
                 }

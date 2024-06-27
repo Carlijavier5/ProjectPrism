@@ -79,7 +79,18 @@ namespace Le3DTilemap {
                     case EventType.MouseUp:
                         if (hasPicked
                             && hitTile == pickedTile) {
-                            Info.TranslatePivot(pickedTile, false);
+                            Info.TranslatePivot(pickedTile, 
+                                                settings.movesColliders,
+                                                settings.movesMesh);
+                            if (settings.movesColliders) {
+                                UndoUtils.RecordScopeUndo(SceneView.lastActiveSceneView,
+                                                          "Change Pivot (Camera)");
+                                Vector3 position = SceneView.lastActiveSceneView.pivot;
+                                position -= Info.transform
+                                    .InverseTransformPoint(pickedTile).Round();
+                                SceneView.lastActiveSceneView.pivot = position;
+                                SceneView.lastActiveSceneView.Repaint();
+                            }
                         } ResetSelection();
                         break;
                 }

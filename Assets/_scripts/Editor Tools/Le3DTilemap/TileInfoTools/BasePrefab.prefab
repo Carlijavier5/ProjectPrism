@@ -113,13 +113,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4428366674542714364, guid: 419b4caea72dd7d409d99e73ff36f22b,
         type: 3}
+      propertyPath: meshRoot
+      value: 
+      objectReference: {fileID: 336327106259511760}
+    - target: {fileID: 4428366674542714364, guid: 419b4caea72dd7d409d99e73ff36f22b,
+        type: 3}
       propertyPath: nameHint
-      value: 6
+      value: 23
       objectReference: {fileID: 0}
     - target: {fileID: 4428366674542714364, guid: 419b4caea72dd7d409d99e73ff36f22b,
         type: 3}
       propertyPath: hashVersion
-      value: 9
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 4428366674542714364, guid: 419b4caea72dd7d409d99e73ff36f22b,
         type: 3}
