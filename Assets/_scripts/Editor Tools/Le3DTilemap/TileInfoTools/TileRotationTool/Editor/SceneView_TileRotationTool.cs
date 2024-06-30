@@ -30,9 +30,9 @@ namespace Le3DTilemap {
                     GUI.color = mouseInRect ? Color.white : new Vector4(1f, 1f, 1f, 0.6f);
                     GUI.Label(rect, iconGrip);
                     GUI.color = Color.white;
-                    GUILayout.Space(20);
-                    GUILayout.Label("Pivot Editor Tool", UIStyles.CenteredLabelBold);
-                    GUILayout.Space(31);
+                    GUILayout.Space(18);
+                    GUILayout.Label("Tile Rotation Tool", UIStyles.CenteredLabelBold);
+                    GUILayout.Space(29);
                     if (mouseInRect && Event.current.type == EventType.MouseDown
                         && Event.current.button == 0) {
                         willHide = true;
@@ -62,16 +62,16 @@ namespace Le3DTilemap {
                         GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
                         GUIStyle style = new(GUI.skin.button) { margin = new() };
                         using (new EditorGUILayout.HorizontalScope()) {
-                            GUILayout.Label("Move Colliders:", lStyle);
+                            GUILayout.Label("Rotate Colliders:", lStyle);
                             GUILayout.FlexibleSpace();
-                            GUIUtils.OnOffButton(settings.movesColliders, out settings.movesColliders,
+                            GUIUtils.OnOffButton(settings.rotatesColliders, out settings.rotatesColliders,
                                                  style, GUILayout.Width(65));
                         } using (new EditorGUILayout.HorizontalScope()) {
                             GUI.enabled = Info.MeshRoot != null;
-                            GUILayout.Label("Move Mesh:", lStyle);
+                            GUILayout.Label("Rotate Mesh:", lStyle);
                             GUILayout.FlexibleSpace();
                             if (Info.MeshRoot != null) {
-                                GUIUtils.OnOffButton(settings.movesMesh, out settings.movesMesh,
+                                GUIUtils.OnOffButton(settings.rotatesMesh, out settings.rotatesMesh,
                                                      style, GUILayout.Width(65));
                             } else {
                                 Rect rect = EditorGUILayout.GetControlRect(false, 19,
@@ -88,13 +88,14 @@ namespace Le3DTilemap {
         protected override void DrawHintContent(int controlID) {
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(208), GUILayout.MinHeight(0))) {
                 using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
-                    string space = "---";
+                    string axis = gridOrientation switch { 
+                        GridOrientation.XZ => "Y",
+                        GridOrientation.XY => "Z",
+                        GridOrientation.YZ => "X",
+                        _ => "None",
+                    };
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label($"X: {(hasHint ? hintTile.x.ToString() : space)}", GUILayout.Width(45));
-                    GUILayout.FlexibleSpace();
-                    GUILayout.Label($"Y: {(hasHint ? hintTile.y.ToString() : space)}", GUILayout.Width(45));
-                    GUILayout.FlexibleSpace();
-                    GUILayout.Label($"Z: {(hasHint ? hintTile.z.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.Label($"Rotation Axis: {axis}");
                     GUILayout.FlexibleSpace();
                 }
             }

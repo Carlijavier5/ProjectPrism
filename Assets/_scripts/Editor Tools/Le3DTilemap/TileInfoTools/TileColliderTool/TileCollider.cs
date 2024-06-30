@@ -26,10 +26,8 @@ namespace Le3DTilemap {
                 }
             }
         }
-        public Vector3Int Size {
-            get => collider.size.Round();
-            set => collider.size.Round();
-        }
+        public Vector3Int Size => collider.size.Round();
+
         public Vector3 Center => collider.center;
         public TileCollider(TileInfo info, char name) {
             this.info = info;
@@ -42,6 +40,14 @@ namespace Le3DTilemap {
             info.gameObject.hideFlags = ogFlags;
             
             collider.hideFlags = HideFlags.NotEditable | HideFlags.HideInInspector;
+        }
+
+        public void Rotate(Matrix4x4 tMatrix) {
+            Vector3 size = tMatrix.MultiplyPoint3x4(collider.size).Abs();
+            Resize(Vector3Int.zero, (size - collider.size).Round());
+            Vector3 center = tMatrix.MultiplyPoint3x4(collider.center);
+            ShiftPivot((center - collider.center).Round());
+            collider.center = center;
         }
 
         public void Resize(Vector3Int diffCenter, Vector3Int diffSize) {

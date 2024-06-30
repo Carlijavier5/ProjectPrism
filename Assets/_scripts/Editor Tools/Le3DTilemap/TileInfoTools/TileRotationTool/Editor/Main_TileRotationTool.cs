@@ -10,7 +10,7 @@ namespace Le3DTilemap {
     [EditorTool("Tile Rotation Tool", typeof(TileInfo))]
     public partial class TileRotationTool : GridTool {
 
-        private TilePivotToolSettings settings;
+        private TileRotationToolSettings settings;
 
         private TileInfo Info => target as TileInfo;
 
@@ -23,8 +23,8 @@ namespace Le3DTilemap {
             base.OnActivated();
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
-            } ResetSelection();
-            allowDirectGridMode = true;
+            } allowDirectGridMode = false;
+            ResetGridInput();
         }
 
         public override void OnToolGUI(EditorWindow window) {
@@ -32,7 +32,7 @@ namespace Le3DTilemap {
             if (HasNullSettings(ref settings, sceneView)) return;
             DrawGridWindow(sceneView, true);
             DrawSceneViewWindowHeader(sceneView);
-            HighlightHintTile();
+            HighlightPivots();
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
@@ -43,11 +43,10 @@ namespace Le3DTilemap {
                 .Contains(Event.current.mousePosition)
                 || settings.sceneGUI.rect
                 .Contains(Event.current.mousePosition)) {
-                hasHint = false;
                 return;
             } DoInputOverrides();
-            DoSelectionInput();
             DoScrollInput(sceneView);
+            DoToolInput();
         }
 
         public override void OnWillBeDeactivated() {

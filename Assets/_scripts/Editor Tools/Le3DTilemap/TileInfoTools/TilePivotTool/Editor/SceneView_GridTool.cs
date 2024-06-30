@@ -12,8 +12,8 @@ namespace Le3DTilemap {
         private bool willHideGridWindow;
         private float gridHeightDiff;
 
+        protected GridOrientation gridOrientation;
         private GridSettingsPage settingsPage;
-        private GridOrientation orientation;
 
         private const string GRID_ORIENTATION = "_Orientation";
         private const string GRID_FALLOFF_DIST = "_TDistance";
@@ -259,8 +259,8 @@ namespace Le3DTilemap {
                                 GUIStyle style = new(EditorStyles.popup) { alignment = TextAnchor.MiddleCenter,
                                                                            margin = new() };
                                 GridOrientation newOrientation = (GridOrientation) EditorGUILayout.EnumPopup(
-                                                                    orientation, style, GUILayout.Width(80));
-                                if (newOrientation != orientation) {
+                                                                    gridOrientation, style, GUILayout.Width(80));
+                                if (newOrientation != gridOrientation) {
                                     SetGridOrientation(newOrientation);
                                 }
                             }
@@ -312,7 +312,7 @@ namespace Le3DTilemap {
                 GridOrientation.XZ => new Vector3(90, 0, 0),
                 GridOrientation.XY => Vector3.zero,
                 _ => new Vector3(0, 90, 0),
-            }; this.orientation = orientation;
+            }; this.gridOrientation = orientation;
         }
 
         private void ToggleQuad(bool toggle) {

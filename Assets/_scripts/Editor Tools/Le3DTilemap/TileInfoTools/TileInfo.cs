@@ -26,20 +26,6 @@ namespace Le3DTilemap {
             }
         }
 
-        public void TranslatePivot(Vector3Int diff, bool translateColliders,
-                                   bool translateMesh) {
-            diff = transform.InverseTransformPoint(diff).Round();
-            UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
-            if (translateColliders) {
-                foreach (TileCollider collider in Colliders) {
-                    collider.Pivot -= diff;
-                } RecordTilespaceChange();
-            } if (meshRoot && translateMesh) {
-                UndoUtils.RecordScopeUndo(meshRoot, "Change Tile Pivot (Transform)");
-                meshRoot.position -= diff;
-            }
-        }
-
         [SerializeField] private int nameHint;
         private char NextChar => (char) (65 + (nameHint++ % 26));
 
@@ -65,6 +51,54 @@ namespace Le3DTilemap {
         public bool PendingHash => pendingHash;
 
         void OnValidate() => HideTransformAndColliders();
+
+        public void TranslatePivot(Vector3Int diff, bool translateColliders,
+                           bool translateMesh) {
+            diff = transform.InverseTransformPoint(diff).Round();
+            UndoUtils.RecordScopeUndo(this, "Change Tile Pivot (TileInfo)");
+            if (translateColliders) {
+                foreach (TileCollider collider in Colliders) {
+                    collider.Pivot -= diff;
+                } RecordTilespaceChange();
+            }
+            if (meshRoot && translateMesh) {
+                UndoUtils.RecordScopeUndo(meshRoot, "Change Tile Pivot (Transform)");
+                meshRoot.position -= diff;
+            }
+        }
+
+        public void RotateTilespace(Vector3Int normal, float delta,
+                                    bool rotatesColliders, bool rotatesMesh) {
+            int signDelta = Mathf.RoundToInt(Mathf.Sign(delta));
+            int signInverse = signDelta * -1;
+            Matrix4x4 tMatrix = normal.x != 0 ? new Matrix4x4(new(1, 0, 0, 0),
+                                                              new(0, 0, signDelta, 0),
+                                                              new(0, signInverse, 0, 0),
+                                                              new(0, 0, 0, 1))
+                              : normal.y != 0 ? new Matrix4x4(new(0, 0, signInverse, 0),
+                                                              new(0, 1, 0, 0),
+                                                              new(signDelta, 0, 0, 0),
+                                                              new(0, 0, 0, 1))
+                              : normal.z != 0 ? new Matrix4x4(new(0, signDelta, 0, 0),
+                                                              new(signInverse, 0, 0, 0),
+                                                              new(0, 0, 1, 0),
+                                                              new(0, 0, 0, 1))
+                                              : new Matrix4x4(new(1, 0, 0, 0),
+                                                              new(0, 1, 0, 0),
+                                                              new(0, 0, 1, 0),
+                                                              new(0, 0, 0, 1));
+            if (rotatesColliders) {
+                foreach (TileCollider collider in Colliders) {
+                    collider.Rotate(tMatrix);
+                } RecordTilespaceChange();
+            }
+
+            if (rotatesMesh) {
+                UndoUtils.RecordScopeUndo(meshRoot, "Tilespace Rotation (Transform)");
+                meshRoot.localPosition = tMatrix.MultiplyPoint3x4(meshRoot.localPosition).Round();
+                meshRoot.RotateAround(meshRoot.position, normal, 90 * signDelta);
+            }
+        }
 
         public void HideTransformAndColliders() {
             gameObject.SetActive(true);

@@ -36,7 +36,7 @@ namespace Le3DTilemap {
             int intDelta = (int) Mathf.Sign(delta);
             switch (activeMode) {
                 case GridInputMode.Move:
-                    if (this.orientation switch { 
+                    if (this.gridOrientation switch { 
                             GridOrientation.XZ
                             => sceneView.camera.transform.position.y,
                             GridOrientation.XY
@@ -51,7 +51,7 @@ namespace Le3DTilemap {
                     WheelCD = 0.075;
                     break;
                 case GridInputMode.Turn:
-                    int orientation = ((int) this.orientation + intDelta) % 3;
+                    int orientation = ((int) this.gridOrientation + intDelta) % 3;
                     orientation = (orientation < 0) ? 3 + orientation : orientation;
                     SetGridOrientation((GridOrientation) orientation);
                     WheelCD = 0.25;
@@ -62,7 +62,7 @@ namespace Le3DTilemap {
         protected void UpdateGridDepth() {
             Vector3 normal;
             Vector3 nonNormalAxis;
-            switch (orientation) {
+            switch (gridOrientation) {
                 case GridOrientation.XZ:
                     normal = Vector3.up;
                     nonNormalAxis = new Vector3(gridQuad.Position.x,
@@ -87,7 +87,7 @@ namespace Le3DTilemap {
                 Vector3Int center = (gridSettings.followCamera ? sceneView.camera.transform.position
                                                            : Vector3.zero).Round();
                 float depth = this.depth - OFFSET;
-                switch (orientation) {
+                switch (gridOrientation) {
                     case GridOrientation.XZ:
                         gridQuad.Position = new Vector3(center.x, depth, center.z);
                         break;
@@ -116,6 +116,11 @@ namespace Le3DTilemap {
             } else if (Event.current.type == EventType.KeyUp) {
                 overrideInput = GridInputMode.None;
             }
+        }
+
+        protected void ResetGridInput() {
+            defaultInput = 0;
+            overrideInput = 0;
         }
     }
 }

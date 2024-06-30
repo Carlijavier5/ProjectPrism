@@ -20,7 +20,7 @@ namespace Le3DTilemap {
 
         private Texture2D iconPlus, iconLess, iconGrip,
                           iconDone, iconWarn, iconFail,
-                          iconPivot;
+                          iconPivot, iconRotation;
 
         public override bool RequiresConstantRepaint() => true;
 
@@ -35,6 +35,7 @@ namespace Le3DTilemap {
             EditorUtils.LoadIcon(ref iconWarn, EditorUtils.ICON_CHECK_YELLOW);
             EditorUtils.LoadIcon(ref iconFail, EditorUtils.ICON_CHECK_RED);
             EditorUtils.LoadIcon(ref iconPivot, "d_ToolHandlePivot");
+            EditorUtils.LoadIcon(ref iconRotation, "_TileRotationTool");
             AssemblyReloadEvents.afterAssemblyReload += AssemblyDisposeCallback;
         }
 
@@ -99,11 +100,11 @@ namespace Le3DTilemap {
 
                 GUILayout.Label("Rotation", oStyle, GUILayout.Width(50));
                 GUILayout.FlexibleSpace();
-                hasPivotTool = ToolManager.activeToolType == typeof(TilePivotTool);
-                GUI.backgroundColor = hasPivotTool ? UIColors.DefinedBlue : Color.white;
-                if (GUILayout.Button(iconPivot, GUILayout.Width(65), GUILayout.Height(18))) {
-                    if (hasPivotTool) ToolManager.SetActiveTool<TileColliderTool>();
-                    else ToolManager.SetActiveTool<TilePivotTool>();
+                bool hasRotationTool = ToolManager.activeToolType == typeof(TileRotationTool);
+                GUI.backgroundColor = hasRotationTool ? UIColors.DefinedBlue : Color.white;
+                if (GUILayout.Button(iconRotation, GUILayout.Width(65), GUILayout.Height(18))) {
+                    if (hasRotationTool) ToolManager.SetActiveTool<TileColliderTool>();
+                    else ToolManager.SetActiveTool<TileRotationTool>();
                 } GUI.backgroundColor = Color.white;
 
                 EditorGUILayout.Space(10);
