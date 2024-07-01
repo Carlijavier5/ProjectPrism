@@ -8,7 +8,7 @@ using CJUtils;
 namespace Le3DTilemap {
 
     [EditorTool("Tile Collider Tool", typeof(TileInfo))]
-    public partial class TileColliderTool : EditorTool {
+    public partial class TileColliderTool : GridTool {
 
         private TileColliderToolSettings settings;
         private TileInfo Info => target as TileInfo;
@@ -20,26 +20,24 @@ namespace Le3DTilemap {
 
         private int activeID;
 
-        private Texture2D iconSearch, iconPlus, iconGrip,
-                          iconSelect, iconScale, iconMove,
-                          iconSettings, iconPivot;
+        private Texture2D iconPivot, iconSelect, iconScale;
 
         public override void OnActivated() {
-            SceneView.duringSceneGui += OnSceneGUI;
-            Undo.undoRedoPerformed += UpdateHandles;
-            LoadPhysicsScene(out physicsSpace);
+            base.OnActivated();
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
-            } Info.OnSelectionChanged += Info_OnSelectionChanged;
-            names = new string[26];
-            for (int i = 0; i < 26; i++) {
-                names[i] = ((char) (65 + i)).ToString();
-            } showSettings = false;
+            } allowDirectGridMode = false;
+
+            Undo.undoRedoPerformed += UpdateHandles;
+            LoadPhysicsScene(out physicsSpace);
+
+            Info.OnSelectionChanged += Info_OnSelectionChanged;
+            ResetWindowProperties();
+
             activeHandles = null;
-            toolMode = 0;
             Info_OnSelectionChanged();
+
             ResetSelection();
-            LoadIcons();
         }
 
         private void Info_OnSelectionChanged() {
@@ -54,15 +52,10 @@ namespace Le3DTilemap {
 
         public override void OnToolGUI(EditorWindow window) {
             if (window is not SceneView sceneView) { return; }
-            if (settings == null) {
-                SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
-                                                         "Missing Tool Settings",
-                                                         "New Settings",
-                                                         iconSearch, iconPlus);
-                return;
-            } GridUtils.DrawGrid(GridAxis.XZ, sceneView, 0);
+            if (HasNullSettings(ref settings, sceneView)) return;
             DrawSubtoolContent();
-            DrawSceneViewWindowHeader();
+            DrawGridWindow(sceneView, false);
+            DrawSceneViewWindowHeader(sceneView);
         }
 
         private void DrawSubtoolContent() {
@@ -83,11 +76,17 @@ namespace Le3DTilemap {
             HighlightSelectedCollider();
         }
 
-        void OnSceneGUI(SceneView sceneView) {
-            if (ToolManager.activeToolType != GetType()
-                || !sceneView.hasFocus || settings == null
+        protected override void OnSceneGUI(SceneView sceneView) {
+            if (InvalidSceneGUI(settings, sceneView,
+                                GetType())) return;
+            if (gridSettings.sceneGUI.rect
+                .Contains(Event.current.mousePosition)
                 || settings.sceneGUI.rect
-                   .Contains(Event.current.mousePosition)) return;
+                .Contains(Event.current.mousePosition)) {
+                hintCollider = null;
+                return;
+            } DoInputOverrides();
+            DoScrollInput(sceneView);
             switch (toolMode) {
                 case ToolMode.Select:
                     DoSelectionInput();
@@ -98,27 +97,20 @@ namespace Le3DTilemap {
             }
         }
 
-        private void ReadToolShortcuts() {
-            
-        }
-
         public override void OnWillBeDeactivated() {
+            base.OnWillBeDeactivated();
             if (Info) {
                 Info.ToggleSelectedIndex(Info.SelectedIndex);
                 Info.OnSelectionChanged -= Info_OnSelectionChanged;
-            } SceneView.duringSceneGui -= OnSceneGUI;
-            Undo.undoRedoPerformed -= UpdateHandles;
+            } Undo.undoRedoPerformed -= UpdateHandles;
+            settings = null;
             Resources.UnloadUnusedAssets();
         }
 
-        private void LoadIcons() {
-            EditorUtils.LoadIcon(ref iconSearch, EditorUtils.ICON_SEARCH);
-            EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
-            EditorUtils.LoadIcon(ref iconGrip, EditorUtils.ICON_VGRIP);
+        protected override void LoadIcons() {
+            base.LoadIcons();
             EditorUtils.LoadIcon(ref iconSelect, "d_Grid.Default");
             EditorUtils.LoadIcon(ref iconScale, "d_AvatarPivot");
-            EditorUtils.LoadIcon(ref iconMove, "d_ToolHandleCenter");
-            EditorUtils.LoadIcon(ref iconSettings, EditorUtils.ICON_SETTINGS);
             EditorUtils.LoadIcon(ref iconPivot, "d_ToolHandleLocal");
         }
     }

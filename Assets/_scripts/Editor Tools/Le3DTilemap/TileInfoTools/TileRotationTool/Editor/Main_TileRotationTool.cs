@@ -24,7 +24,6 @@ namespace Le3DTilemap {
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
             } allowDirectGridMode = false;
-            ResetGridInput();
         }
 
         public override void OnToolGUI(EditorWindow window) {
@@ -36,10 +35,8 @@ namespace Le3DTilemap {
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
-            if (ToolManager.activeToolType != GetType()
-                || !sceneView.hasFocus || gridSettings == null 
-                || settings == null || gridQuad == null) return;
-            if (gridSettings.sceneGUI.rect
+            if (InvalidSceneGUI(settings, sceneView, GetType())
+                || gridSettings.sceneGUI.rect
                 .Contains(Event.current.mousePosition)
                 || settings.sceneGUI.rect
                 .Contains(Event.current.mousePosition)) {

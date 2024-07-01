@@ -350,7 +350,7 @@ namespace Le3DTilemap {
             gridSettings.baseColor = color;
         }
 
-        private void ResetWindowProperties() {
+        private void ResetGridWindowProperties() {
             showGridSettings = false;
             settingsPage = 0;
         }

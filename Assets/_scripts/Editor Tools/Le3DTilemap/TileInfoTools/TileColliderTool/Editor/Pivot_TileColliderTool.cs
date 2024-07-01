@@ -14,12 +14,6 @@ namespace Le3DTilemap {
         private bool pivotSelected;
         private int pivotOffset;
 
-        private double wheelCD;
-        private double WheelCD {
-            get => EditorApplication.timeSinceStartup > wheelCD ? -1 : 1;
-            set { wheelCD = EditorApplication.timeSinceStartup + value; }
-        }
-
         private void HighlightPivotTarget() {
             if (Event.current.type == EventType.Repaint) {
                 if (onPivotCollider) {

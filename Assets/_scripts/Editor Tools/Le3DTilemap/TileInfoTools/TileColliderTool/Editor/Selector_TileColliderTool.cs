@@ -14,7 +14,6 @@ namespace Le3DTilemap {
 
         private BoxCollider hintCollider;
         private int selectionIndex;
-        private bool pendingCast;
 
         private double raycastCD;
         private double RaycastCD {

@@ -15,11 +15,12 @@ namespace Le3DTilemap {
 
         private string[] names;
 
-        private void DrawSceneViewWindowHeader() {
+        private void DrawSceneViewWindowHeader(SceneView sceneView) {
             Handles.BeginGUI();
-            Rect rect = GUILayout.Window(2, settings.sceneGUI.rect, DrawSceneViewWindow,
+            Rect rect = GUILayout.Window(4, settings.sceneGUI.rect, DrawSceneViewWindow,
                                          "", EditorStyles.textArea);
             if (!rect.Equals(settings.sceneGUI.rect)) {
+                rect = EditorUtils.PreventWindowOverflow(sceneView.position, rect);
                 settings.sceneGUI.rect = rect;
                 EditorUtility.SetDirty(settings);
             } Handles.EndGUI();
@@ -180,6 +181,14 @@ namespace Le3DTilemap {
                                                    _ => iconSelect }, style, GUILayout.Width(60))) {
                 this.toolMode = toolMode;
             } GUI.backgroundColor = Color.white;
+        }
+
+        private void ResetWindowProperties() {
+            names = new string[26];
+            for (int i = 0; i < 26; i++) {
+                names[i] = ((char) (65 + i)).ToString();
+            } showSettings = false;
+            toolMode = 0;
         }
     }
 }

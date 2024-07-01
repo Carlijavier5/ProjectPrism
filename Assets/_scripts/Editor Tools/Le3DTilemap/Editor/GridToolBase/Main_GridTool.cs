@@ -20,9 +20,10 @@ namespace Le3DTilemap {
                 AssetUtils.TryRetrieveAsset(out gridSettings);
             } if (gridSettings is not null) {
                 InitializeLocalGrid();
-            } depth = 0;
+            } ResetGridInput();
+            depth = 0;
             LoadIcons();
-            ResetWindowProperties();
+            ResetGridWindowProperties();
         }
 
         protected bool HasNullSettings<T>(ref T settings, SceneView sceneView) where T : ScriptableObject {
@@ -73,6 +74,13 @@ namespace Le3DTilemap {
         }
 
         protected virtual void OnSceneGUI(SceneView sceneView) { }
+
+        protected bool InvalidSceneGUI<T>(T settings, SceneView sceneView,
+                                           System.Type toolType) where T : ScriptableObject {
+            return ToolManager.activeToolType != GetType()
+                || !sceneView.hasFocus || gridSettings == null
+                || settings == null || gridQuad == null;
+        }
 
         public override void OnWillBeDeactivated() {
             SceneView.duringSceneGui -= OnSceneGUI;

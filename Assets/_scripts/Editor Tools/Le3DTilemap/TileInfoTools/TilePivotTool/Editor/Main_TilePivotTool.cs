@@ -11,7 +11,6 @@ namespace Le3DTilemap {
     public partial class TilePivotTool : GridTool {
 
         private TilePivotToolSettings settings;
-
         private TileInfo Info => target as TileInfo;
 
         private GUIContent toolIcon;
@@ -36,9 +35,8 @@ namespace Le3DTilemap {
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
-            if (ToolManager.activeToolType != GetType()
-                || !sceneView.hasFocus || gridSettings == null 
-                || settings == null || gridQuad == null) return;
+            if (InvalidSceneGUI(settings, sceneView,
+                                GetType())) return;
             if (gridSettings.sceneGUI.rect
                 .Contains(Event.current.mousePosition)
                 || settings.sceneGUI.rect
