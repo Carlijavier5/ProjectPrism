@@ -312,7 +312,8 @@ namespace Le3DTilemap {
                 GridOrientation.XZ => new Vector3(90, 0, 0),
                 GridOrientation.XY => Vector3.zero,
                 _ => new Vector3(0, 90, 0),
-            }; this.gridOrientation = orientation;
+            }; gridOrientation = orientation;
+            UpdateGridDepth();
         }
 
         private void ToggleQuad(bool toggle) {

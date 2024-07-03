@@ -54,7 +54,7 @@ namespace Le3DTilemap {
             int selection = (int) res;
             switch (res) {
                 case 0:
-                    EditorUtils.ShowAdvancedObjectPicker<TileData>(OPCallback);
+                    EditorUtils.ShowAdvancedObjectPicker<TileData>(OPCallback, ".asset");
                     break;
                 case 1:
                     TileCreationWindow window = TileCreationWindow.ShowAuxiliary(null);

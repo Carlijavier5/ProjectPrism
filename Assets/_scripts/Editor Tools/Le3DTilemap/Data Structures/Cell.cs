@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public class Cell {
+public class Cell<T> where T : ScriptableObject {
 
-    [SerializeField] private TileData tile;
-    public TileData Tile => tile;
+    [SerializeField] private T tile;
+    public T Tile => tile;
 
     [SerializeField] private Vector3 position;
     public Vector3 Position => position;
@@ -17,7 +17,7 @@ public class Cell {
 
     public Cell(Vector3 position) => this.position = position;
 
-    public void Fill(TileData tile, Quaternion rotation, LayerMask layer) {
+    public void Fill(T tile, Quaternion rotation, LayerMask layer) {
         this.tile = tile;
         this.rotation = rotation;
         this.layer = layer;
@@ -31,8 +31,8 @@ public class Cell {
     public void SetLayer(int layer) => this.layer = layer;
     public bool HasLayer(int layer) => (this.layer & layer) != 0;
 
-    public static void Swap(Cell cell1, Cell cell2) {
-        TileData tempTile = cell1.tile;
+    public static void Swap(Cell<T> cell1, Cell<T> cell2) {
+        T tempTile = cell1.tile;
         cell1.tile = cell2.tile;
         cell2.tile = tempTile;
 

@@ -6,18 +6,18 @@ using UnityEditor;
 namespace Le3DTilemap {
         public class LevelGridData : ScriptableObject {
 
-        [SerializeField] private Tilemap3D tilemap;
-        public Tilemap3D Tilemap => tilemap;
+        [SerializeField] private Tilemap3D<TileData> tilemap;
+        public Tilemap3D<TileData> Tilemap => tilemap;
 
         [SerializeField] private int baseScale = 1;
 
         public void GenerateGrid(int size) => GenerateGrid(Vector3Int.one * size);
         public void GenerateGrid(Vector3Int size) {
-            tilemap = new Tilemap3D(size);
+            tilemap = new Tilemap3D<TileData>(size);
             EditorUtility.SetDirty(this);
         }
 
-        public Cell InAdjacent(Vector3 center, Vector3 normal) {
+        public Cell<TileData> InAdjacent(Vector3 center, Vector3 normal) {
             center /= baseScale;
             return tilemap.UnscaledInAdjacent(center.Round(), normal);
         }

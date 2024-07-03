@@ -27,3 +27,27 @@ namespace Le3DTilemap {
         public Color hintColor;
     }
 }
+
+public class Player : MonoBehaviour {
+    [SerializeField] private PlayerData data;
+    [SerializeField] private P struc;
+
+    private void Awake() {
+
+    }
+}
+
+public class PlayerData : ScriptableObject {
+    [SerializeField] private P struc;
+    public P Struc;
+}
+
+[System.Serializable]
+public class P {
+    float speed;
+    float position;
+
+    public P(P oldP) {
+        this.speed = oldP.speed;
+    }
+}

@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 Shader "Unlit/Grid" {
     Properties {
         _Orientation ("Orientation", Integer) = 0
@@ -55,9 +57,11 @@ Shader "Unlit/Grid" {
                 float2 pixelRange = range/speeds;
                 float lineWeight = saturate(min(pixelRange.x, pixelRange.y) - _LineThickness);
                 half4 param = lerp(_GridColour, _BaseColour, lineWeight);
+
+                float3 objectPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
                  
                 //Falloff
-                half3 viewDirW = _WorldSpaceCameraPos - i.worldPos;
+                half3 viewDirW = objectPos - i.worldPos;
                 half viewDist = length(viewDirW);
                 half falloff = saturate((viewDist - _ODistance) / (_TDistance - _ODistance) );
                 param.a *= (1.0f - falloff);

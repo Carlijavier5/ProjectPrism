@@ -50,6 +50,8 @@ namespace Le3DTilemap {
         [SerializeField] private bool pendingHash;
         public bool PendingHash => pendingHash;
 
+        public bool IsValid => Tilespace.Count > 0;
+
         void OnValidate() => HideTransformAndColliders();
 
         public void TranslatePivot(Vector3Int diff, bool translateColliders,

@@ -2,40 +2,42 @@
 using UnityEngine;
 using UnityEditor;
 
-public class TileData : ScriptableObject {
+namespace Le3DTilemap {
+    public class TileData : ScriptableObject {
 
-    [SerializeField] private GameObject prefab;
-    public GameObject Prefab { 
-        get => prefab;
-        set { prefab = value;
-              GetPreviewAsync(); }
-    }
-
-    [HideInInspector]
-    [SerializeField] private Texture2D preview;
-    public Texture2D Preview {
-        get {
-            if (preview == null) GetPreviewAsync();
-            return preview;
+        [SerializeField] private GameObject prefab;
+        public GameObject Prefab {
+            get => prefab;
+            set {
+                prefab = value;
+                prefab.TryGetComponent(out info);
+                GetPreviewAsync();
+            }
         }
-    }
 
-    public async void GetPreviewAsync() {
-        while (preview == null) {
-            if (prefab == null) return;
-            preview = AssetPreview.GetAssetPreview(prefab);
-            await Task.Yield();
+        [SerializeField] private TileInfo info;
+        public TileInfo Info => info;
+        public int HashVersion => info == null ? -1 : info.HashVersion;
+
+        public bool IsValid => prefab != null
+                            && (info != null || prefab.TryGetComponent(out info))
+                            && info.IsValid;
+
+        [HideInInspector]
+        [SerializeField] private Texture2D preview;
+        public Texture2D Preview {
+            get {
+                if (preview == null) GetPreviewAsync();
+                return preview;
+            }
         }
-    }
-}
 
-[CustomEditor(typeof(TileData))]
-public class TileDataEditor : Editor {
-
-    private TileData TileData => target as TileData;
-
-    public override Texture2D RenderStaticPreview(string assetPath, Object[] subAssets, int width, int height) {
-        return TileData.Preview == null ? base.RenderStaticPreview(assetPath, subAssets, width, height)
-                                        : TileData.Preview;
+        public async void GetPreviewAsync() {
+            while (preview == null) {
+                if (prefab == null) return;
+                preview = AssetPreview.GetAssetPreview(prefab);
+                await Task.Yield();
+            }
+        }
     }
 }

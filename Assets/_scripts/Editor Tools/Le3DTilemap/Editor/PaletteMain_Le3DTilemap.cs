@@ -109,7 +109,10 @@ namespace Le3DTilemap {
                 GUILayout.FlexibleSpace();
                 using (new EditorGUILayout.VerticalScope()) {
                     EditorGUILayout.Separator(); EditorGUILayout.Separator();
-                    GUILayout.Label("Tile Palette is Empty", UIStyles.CenteredLabelBold);
+                    string message = string.IsNullOrEmpty(searchString) ? "Tile Palette is Empty"
+                                                                        : $"No matching results "
+                                                                        + $"for \"{searchString}\"";
+                    GUILayout.Label(message, UIStyles.CenteredLabelBold);
                 } GUILayout.FlexibleSpace();
             } else {
                 int amountPerRow = Mathf.CeilToInt((position.xMax - position.xMin - 10)
