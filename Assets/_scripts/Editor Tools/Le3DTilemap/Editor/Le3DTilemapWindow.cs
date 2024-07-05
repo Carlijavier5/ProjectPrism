@@ -12,6 +12,7 @@ namespace Le3DTilemap {
 
         private Le3DTilemapTool tool;
         private Le3DTilemapWindowPrefs prefs;
+        private bool alwaysRepaint;
 
         private Texture2D iconSearch, iconPlus, iconGridBox,
                           iconGridPaint, iconGridPicking,
@@ -27,13 +28,16 @@ namespace Le3DTilemap {
             if (prefs is null) {
                 AssetUtils.TryRetrieveAsset(out prefs);
             } LoadIcons();
+            UpdateSearchResults(searchString, out shownTiles);
         }
 
         void OnDisable() {
             Resources.UnloadUnusedAssets();
         }
 
-        void Update() => Repaint();
+        void Update() {
+            if (alwaysRepaint) Repaint();
+        }
 
         void OnGUI() {
             if (prefs is null) {

@@ -397,10 +397,16 @@ namespace CJUtils {
             } return null;
         }
 
-        private static string ProduceValidAssetNotation(string location, string name, int appendix = 0) {
-            string newName = location + $"/{name} {(appendix == 0 ? "" : appendix)}.asset";
-            return System.IO.File.Exists(newName) ? ProduceValidAssetNotation(location, name, appendix + 1)
-                                                  : newName;
+        public static string ProduceValidAssetNotation(string location, string name, int appendix = 0) {
+            string newName = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}.asset";
+            return File.Exists(newName) ? ProduceValidAssetNotation(location, name, appendix + 1)
+                                        : newName;
+        }
+
+        public static string ProduceValidPrefabNotation(string location, string name, int appendix = 0) {
+            string newName = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}.prefab";
+            return File.Exists(newName) ? ProduceValidPrefabNotation(location, name, appendix + 1)
+                                        : newName;
         }
 
         /// <summary>

@@ -18,8 +18,10 @@ namespace Le3DTilemap {
                     searchString = EditorGUILayout.TextField(searchString,
                                                              EditorStyles.toolbarSearchField,
                                                              GUILayout.MinWidth(150));
-                    if (changeScope.changed) shownTiles = null;
-                    UpdateSearchResults(searchString, out shownTiles);
+                    if (changeScope.changed) {
+                        shownTiles = null;
+                        UpdateSearchResults(searchString, out shownTiles);
+                    }
                 } EditorGUILayout.GetControlRect(GUILayout.MinWidth(5));
                 GUILayout.Label("Mode:");
                 using (var changeScope = new EditorGUI.ChangeCheckScope()) {

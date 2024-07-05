@@ -15,7 +15,7 @@ namespace Le3DTilemap {
                                                                    "New Tile... " };
 
         private bool mouseInScope;
-        private enum DragAndDropState { None, Invalid, TileData, GameObject }
+        private enum DragAndDropState { None, Invalid, TileData, Prefab }
         private DragAndDropState dndState = DragAndDropState.None;
 
         private PaletteEditMode activeEditMode;
@@ -48,12 +48,12 @@ namespace Le3DTilemap {
                 if (mouseInScope) {
                     DragAndDrop.visualMode = dndState switch {
                         DragAndDropState.Invalid => DragAndDropVisualMode.Rejected,
-                        DragAndDropState.GameObject => DragAndDropVisualMode.Copy,
+                        DragAndDropState.Prefab => DragAndDropVisualMode.Copy,
                         DragAndDropState.TileData => DragAndDropVisualMode.Move,
                         _ => DragAndDrop.visualMode,
                     };
                 } GUI.enabled = dndState == DragAndDropState.TileData
-                             || dndState == DragAndDropState.GameObject;
+                             || dndState == DragAndDropState.Prefab;
                 using (var boxScope = new EditorGUILayout.VerticalScope(EditorStyles.numberField,
                                                                           GUILayout.ExpandHeight(true))) {
                     GUI.enabled = true;
@@ -81,8 +81,9 @@ namespace Le3DTilemap {
             if (DragAndDrop.objectReferences.Length == 1) {
                 object draggedObject = DragAndDrop.objectReferences[0];
                 stateRes = draggedObject is TileData ? DragAndDropState.TileData
-                                                     : draggedObject is GameObject ? DragAndDropState.GameObject
-                                                                                   : DragAndDropState.Invalid;
+                                                     : draggedObject is GameObject 
+                && PrefabUtility.GetPrefabAssetType(draggedObject as GameObject) > 0 ? DragAndDropState.Prefab
+                                                                                     : DragAndDropState.Invalid;
             } else stateRes = DragAndDrop.objectReferences.Length == 0 ? DragAndDropState.None
                                                                        : DragAndDropState.Invalid;
         }
@@ -95,7 +96,7 @@ namespace Le3DTilemap {
                     case DragAndDropState.TileData:
                         OPCallback(result[0], true);
                         break;
-                    case DragAndDropState.GameObject:
+                    case DragAndDropState.Prefab:
                         GameObject prefab = result[0] as GameObject;
                         TileCreationWindow window = TileCreationWindow.ShowAuxiliary(prefab);
                         window.OnTileCreation += Window_OnTileCreation;
@@ -132,6 +133,7 @@ namespace Le3DTilemap {
         }
 
         private void DrawTileCard(TileData data, int index) {
+            if (data == null) return;
             bool isSelected = SelectedTile == data;
             using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(false))) {
                 DrawDragAndDropPreview(data, index, isSelected);

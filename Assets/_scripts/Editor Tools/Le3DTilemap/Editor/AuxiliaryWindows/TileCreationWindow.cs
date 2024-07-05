@@ -7,6 +7,8 @@ using CJUtils;
 namespace Le3DTilemap {
     public class TileCreationWindow : EditorWindow {
 
+        private TileCreationWindowSettings settings;
+
         private enum SetupMode { None, InPlace, Variant }
         private SetupMode setupMode = SetupMode.Variant;
 
@@ -16,11 +18,13 @@ namespace Le3DTilemap {
 
         private Editor preview;
         private GameObject prefab;
+        private PrefabAssetType prefabType;
         private string tileName = "No Prefab Selected";
         private string prefabName = "No Prefab Selected";
         private Vector2 globalScroll;
 
-        private Texture2D iconHelp, iconGood;
+        private Texture2D iconHelp, iconGood, iconSearch,
+                          iconPlus;
 
         public static TileCreationWindow ShowAuxiliary(GameObject prefab) {
             TileCreationWindow window = GetWindow<TileCreationWindow>("New Tile Data");
@@ -32,17 +36,29 @@ namespace Le3DTilemap {
 
         void OnEnable() {
             AssemblyReloadEvents.beforeAssemblyReload += AssemblyCleanup;
-            EditorUtils.LoadIcon(ref iconHelp, EditorUtils.ICON_HELP);
-            EditorUtils.LoadIcon(ref iconGood, EditorUtils.ICON_CHECK_BLUE);
-        }
-
-        private void ProcessPrefab(GameObject prefab) {
-            TileInfo info = prefab.GetComponentInChildren<TileInfo>();
-            tileName = prefab.name;
-            prefabName = prefab.name;
+            if (settings is null) {
+                AssetUtils.TryRetrieveAsset(out settings);
+            } LoadIcons();
         }
 
         void OnGUI() {
+            if (settings == null) {
+                using (new EditorGUILayout.HorizontalScope()) {
+                    GUILayout.FlexibleSpace();
+                    using (new EditorGUILayout.VerticalScope()) {
+                        GUILayout.FlexibleSpace();
+                        if (settings == null) {
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                            SceneViewUtils.DrawMissingSettingsPrompt(ref settings,
+                                                    "Missing Window Settings",
+                                                    "New Tile Creation Settings",
+                                                    iconSearch, iconPlus);
+                            EditorGUILayout.GetControlRect(GUILayout.Height(1));
+                        } GUILayout.FlexibleSpace();
+                    } GUILayout.FlexibleSpace();
+                } return;
+            }
+
             AssetUtils.InvalidNameCondition tileNameValid = AssetUtils.ValidateFilename(tileName);
             AssetUtils.InvalidNameCondition prefabNameValid = AssetUtils.ValidateFilename(prefabName);
             using (var scrollScope = new EditorGUILayout.ScrollViewScope(globalScroll)) {
@@ -115,21 +131,30 @@ namespace Le3DTilemap {
                         using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
                             GUILayout.Label("Setup Mode", UIStyles.CenteredLabelBold);
                         } using (new EditorGUILayout.HorizontalScope()) {
-                            GUIContent content = new GUIContent("None", "Do not perform any prefab setup");
+                            string tooltip = GUI.enabled ? "Do not perform any prefab setup" : string.Empty;
+                            GUIContent content = new GUIContent("None", tooltip);
                             GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
                             Rect rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                        GUILayout.Width(90),
                                                                        GUILayout.ExpandWidth(true));
                             rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
                             DrawSetupButton(rect, SetupMode.None, content, style);
-                            content = new GUIContent("In-Place", "Modify the pre-existing target prefab");
+                            bool allowInPlace = prefabType == PrefabAssetType.Regular
+                                             || prefabType == PrefabAssetType.Variant;
+                            GUI.enabled = allowInPlace;
+                            tooltip = GUI.enabled ? allowInPlace ? "Modify the pre-existing target prefab"
+                                                                 : "Raw models do not allow in-place modifications"
+                                                  : string.Empty;
+                            content = new GUIContent("In-Place", tooltip);
                             style = new(GUI.skin.button) { margin = { right = 0, left = 0 } };
                             rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                   GUILayout.Width(90),
                                                                   GUILayout.ExpandWidth(true));
                             rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
                             DrawSetupButton(rect, SetupMode.InPlace, content, style);
-                            content = new GUIContent("Variant", "Create a new prefab containing the target");
+                            GUI.enabled = prefab != null;
+                            tooltip = GUI.enabled ? "Create a new prefab containing the target" : string.Empty;
+                            content = new GUIContent("Variant", tooltip);
                             style = new(GUI.skin.button) { margin = { left = 0 } };
                             rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                   GUILayout.Width(90),
@@ -202,18 +227,21 @@ namespace Le3DTilemap {
                     } EditorGUILayout.GetControlRect(GUILayout.Width(2));
                 }
             } using (new EditorGUILayout.HorizontalScope()) {
+                GUI.enabled = prefab != null && tileNameValid == 0 && prefabNameValid == 0;
                 GUI.color = UIColors.Green;
                 if (GUILayout.Button("Create")) {
-                    TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
-                    if (newAsset) {
-                        newAsset.Prefab = prefab;
-                        EditorUtility.SetDirty(newAsset);
-                        OnTileCreation?.Invoke(newAsset);
-                        Close();
-                    }
-                } GUI.color = UIColors.Red;
+                    CommitSetup();
+                } GUI.enabled = true;
+                GUI.color = UIColors.Red;
                 if (GUILayout.Button("Cancel")) Close();
             }
+        }
+
+        private void ProcessPrefab(GameObject prefab) {
+            prefabType = PrefabUtility.GetPrefabAssetType(prefab);
+            TileInfo info = prefab.GetComponentInChildren<TileInfo>();
+            tileName = prefab.name;
+            prefabName = prefab.name;
         }
 
         private void DrawSetupButton(Rect rect, SetupMode mode, 
@@ -252,6 +280,37 @@ namespace Le3DTilemap {
                             style, GUILayout.Width(19), GUILayout.Height(19));
         }
 
+        private void CommitSetup() {
+            switch (setupMode) {
+                case SetupMode.InPlace:
+                    break;
+                case SetupMode.Variant:
+                    string path = AssembleVariant(out bool success);
+                    if (!success) {
+                        Debug.LogWarning($"Could not create asset at {path}");
+                        return;
+                    } break;
+            } /* TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
+            if (newAsset) {
+                newAsset.Prefab = prefab;
+                EditorUtility.SetDirty(newAsset);
+                OnTileCreation?.Invoke(newAsset);
+                Close();
+            }*/
+        }
+
+        private string AssembleVariant(out bool success) {
+            GameObject mainRoot = new(prefabName);
+            GameObject meshRoot = PrefabUtility.InstantiatePrefab(prefab, mainRoot.transform) as GameObject;
+            meshRoot.name = $"Mesh Root ({prefab.name})";
+            PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab, mainRoot.transform);
+            string path = AssetDatabase.GetAssetPath(prefab).RemovePathEnd("\\/");
+            path = AssetUtils.ProduceValidPrefabNotation(path, prefabName);
+            PrefabUtility.SaveAsPrefabAsset(mainRoot, path, out success);
+            DestroyImmediate(mainRoot);
+            return path;
+        }
+
         void AssemblyCleanup() {
             AssemblyReloadEvents.beforeAssemblyReload -= AssemblyCleanup;
             DestroyImmediate(preview);
@@ -261,7 +320,15 @@ namespace Le3DTilemap {
         void OnDisable() {
             OnTileCreation = null;
             DestroyImmediate(preview);
+            settings = null;
             Resources.UnloadUnusedAssets();
+        }
+
+        private void LoadIcons() {
+            EditorUtils.LoadIcon(ref iconHelp, EditorUtils.ICON_HELP);
+            EditorUtils.LoadIcon(ref iconGood, EditorUtils.ICON_CHECK_BLUE);
+            EditorUtils.LoadIcon(ref iconSearch, EditorUtils.ICON_SEARCH);
+            EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
         }
     }
 }
