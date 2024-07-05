@@ -35,8 +35,7 @@ namespace Le3DTilemap {
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
-            if (InvalidSceneGUI(settings, sceneView,
-                                GetType())) return;
+            if (InvalidSceneGUI(settings, sceneView)) return;
             if (gridSettings.sceneGUI.rect
                 .Contains(Event.current.mousePosition)
                 || settings.sceneGUI.rect

@@ -75,8 +75,8 @@ namespace Le3DTilemap {
 
         protected virtual void OnSceneGUI(SceneView sceneView) { }
 
-        protected bool InvalidSceneGUI<T>(T settings, SceneView sceneView,
-                                           System.Type toolType) where T : ScriptableObject {
+        protected bool InvalidSceneGUI<T>(T settings, SceneView sceneView)
+                                          where T : ScriptableObject {
             return ToolManager.activeToolType != GetType()
                 || !sceneView.hasFocus || gridSettings == null
                 || settings == null || gridQuad == null;

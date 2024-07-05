@@ -403,10 +403,19 @@ namespace CJUtils {
                                         : newName;
         }
 
-        public static string ProduceValidPrefabNotation(string location, string name, int appendix = 0) {
-            string newName = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}.prefab";
-            return File.Exists(newName) ? ProduceValidPrefabNotation(location, name, appendix + 1)
+        public static string ProduceValidAssetNotation(string location, string name,
+                                                       string extension, int appendix = 0) {
+            string newName = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}{extension}";
+            return File.Exists(newName) ? ProduceValidAssetNotation(location, name, extension, appendix + 1)
                                         : newName;
+        }
+
+        public static string ProduceValidAssetName(string location, string name,
+                                                   string extension, int appendix = 0) {
+            string newName = $"{name}{(appendix == 0 ? "" : " " + appendix)}";
+            string newLocation = location + $"/{newName}{extension}";
+            return File.Exists(newLocation) ? ProduceValidAssetNotation(location, name, extension, appendix + 1)
+                                            : newName;
         }
 
         /// <summary>

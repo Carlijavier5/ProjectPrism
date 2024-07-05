@@ -173,12 +173,14 @@ namespace Le3DTilemap {
                         } using (new EditorGUILayout.VerticalScope()) {
                             EditorGUILayout.GetControlRect(false, 2, GUILayout.Width(1));
                             using (new EditorGUILayout.HorizontalScope()) {
+                                if (setupMode == 0) GUI.enabled = false;
                                 GUILayout.Label("Prefab Name:");
                                 GUI.color = prefabNameValid == AssetUtils.InvalidNameCondition.None ? Color.white
                                                                                                  : UIColors.DarkRed;
                                 prefabName = EditorGUILayout.TextField(prefabName, GUILayout.Width(165));
                                 DrawTooltipLabel(prefabNameValid);
                                 GUI.color = Color.white;
+                                if (setupMode == 0) GUI.enabled = true;
                             } using (new EditorGUILayout.HorizontalScope()) {
                                 GUILayout.Label("Engine Complexity:");
                                 GUIContent content = new GUIContent("Static", "Static Tiles are:\n"
@@ -281,16 +283,13 @@ namespace Le3DTilemap {
         }
 
         private void CommitSetup() {
-            switch (setupMode) {
-                case SetupMode.InPlace:
-                    break;
-                case SetupMode.Variant:
-                    string path = AssembleVariant(out bool success);
-                    if (!success) {
-                        Debug.LogWarning($"Could not create asset at {path}");
-                        return;
-                    } break;
-            } /* TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
+            if (setupMode > 0) {
+                string path = AssemblePrefab(out bool success);
+                if (!success) {
+                    Debug.LogWarning($"Could not create/modify asset at {path}");
+                    return;
+                }
+            }/* TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
             if (newAsset) {
                 newAsset.Prefab = prefab;
                 EditorUtility.SetDirty(newAsset);
@@ -299,14 +298,21 @@ namespace Le3DTilemap {
             }*/
         }
 
-        private string AssembleVariant(out bool success) {
+        private string AssemblePrefab(out bool success) {
             GameObject mainRoot = new(prefabName);
             GameObject meshRoot = PrefabUtility.InstantiatePrefab(prefab, mainRoot.transform) as GameObject;
-            meshRoot.name = $"Mesh Root ({prefab.name})";
             PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab, mainRoot.transform);
-            string path = AssetDatabase.GetAssetPath(prefab).RemovePathEnd("\\/");
-            path = AssetUtils.ProduceValidPrefabNotation(path, prefabName);
-            PrefabUtility.SaveAsPrefabAsset(mainRoot, path, out success);
+            string path = AssetDatabase.GetAssetPath(prefab);
+            string newName = AssetUtils.ProduceValidAssetName(path.RemovePathEnd("\\/"),
+                                                               prefabName, ".prefab");
+            string newPath = AssetUtils.ProduceValidAssetNotation(path.RemovePathEnd("\\/"),
+                                                                   newName, ".prefab");
+            if (setupMode == SetupMode.InPlace) {
+                AssetDatabase.RenameAsset(path, newName);
+                PrefabUtility.UnpackPrefabInstance(meshRoot, PrefabUnpackMode.Completely,
+                                   InteractionMode.AutomatedAction);
+            } meshRoot.name = $"Mesh Root ({prefab.name})";
+            PrefabUtility.SaveAsPrefabAsset(mainRoot, newPath, out success);
             DestroyImmediate(mainRoot);
             return path;
         }
