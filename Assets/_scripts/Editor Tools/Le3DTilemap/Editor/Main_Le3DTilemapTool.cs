@@ -8,7 +8,7 @@ namespace Le3DTilemap {
     public enum ToolMode { Move, Place, Pick }
 
     [EditorTool("Le3DTilemap")]
-    public partial class Le3DTilemapTool : EditorTool {
+    public partial class Le3DTilemapTool : GridTool {
 
         public static event System.Action OnToolActivated;
 
@@ -19,11 +19,8 @@ namespace Le3DTilemap {
         private LevelGridHook sceneHook;
 
         public override GUIContent toolbarIcon => EditorGUIUtility.IconContent("d_Tile Icon");
-        private int gridHeight;
-        private GameObject tileObject;
 
-        private Texture2D iconGrip, iconWarning, iconInfo,
-                          iconSearch, iconPlus;
+        private Texture2D iconWarning, iconInfo;
 
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
         public static void Activate() => ToolManager.SetActiveTool<Le3DTilemapTool>();
@@ -49,10 +46,10 @@ namespace Le3DTilemap {
             } if (sceneHook == null) {
                 DrawSceneViewWindowHeader();
                 return;
-            } DrawGrid(gridHeight, 1000);
+            }
             DrawSceneViewWindowHeader();
         }
-
+        /*
         public void InputHandling(SceneView sceneView) {
             sceneView.sceneViewState.alwaysRefresh = Event.current.type == EventType.MouseMove
                                          || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseUp;
@@ -68,28 +65,16 @@ namespace Le3DTilemap {
                     ///Instantiate(tileObject, GridUtils.WorldToCell(hitPoint), Quaternion.identity);
                 }
             } else { }///Handles.DrawWireCube(GridUtils.WorldToCell(hitPoint), Vector3.one * 0.8f);
-        }
+        }*/
 
         public override void OnWillBeDeactivated() {
             Resources.UnloadUnusedAssets();
         }
 
-        private void DrawGrid(int y, int distance) {
-            Handles.zTest = UnityEngine.Rendering.CompareFunction.Less;
-            float offset = 0.5f;
-            for (int x = -distance; x < distance; x++) {
-                Handles.DrawLine(new(x - offset, y, -distance), new(x - offset, y, distance));
-            } for (int z = -distance; z < distance; z++) {
-                Handles.DrawLine(new(-distance, y, z - offset), new(distance, y, z - offset));
-            } Handles.zTest = UnityEngine.Rendering.CompareFunction.GreaterEqual;
-        }
-
-        private void LoadIcons() {
-            EditorUtils.LoadIcon(ref iconGrip, EditorUtils.ICON_VGRIP);
+        protected override void LoadIcons() {
+            base.LoadIcons();
             EditorUtils.LoadIcon(ref iconWarning, EditorUtils.ICON_WARNING);
             EditorUtils.LoadIcon(ref iconInfo, EditorUtils.ICON_INFO);
-            EditorUtils.LoadIcon(ref iconSearch, EditorUtils.ICON_SEARCH);
-            EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
         }
     }
 }

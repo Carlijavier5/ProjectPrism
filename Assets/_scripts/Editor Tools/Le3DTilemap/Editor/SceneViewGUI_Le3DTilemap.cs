@@ -66,8 +66,8 @@ namespace Le3DTilemap {
                         Debug.Log($"Children: {SceneUtils.SelectedOutlineChildrenColor}");
                         SceneUtils.SelectedOutlineSingleColor = new Vector4(0.5f, 0.5f, 0.25f, 1f);
                         SceneUtils.SelectedOutlineChildrenColor = new Vector4(0, 0, 0, 0);*/
-                    } gridHeight = EditorGUILayout.IntField(gridHeight);
-                    tileObject = EditorGUILayout.ObjectField(tileObject, typeof(GameObject), false) as GameObject;
+                    } //gridHeight = EditorGUILayout.IntField(gridHeight);
+                    //tileObject = EditorGUILayout.ObjectField(tileObject, typeof(GameObject), false) as GameObject;
                 }
             }
         }

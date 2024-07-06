@@ -48,7 +48,7 @@ namespace Le3DTilemap {
 
         public void ValidateRepaint() {
             EventType eType = Event.current.type;
-            if (alwaysRepaint && (eType == EventType.MouseMove
+            if (mouseInScope && (eType == EventType.MouseMove
                 || eType == EventType.MouseDown
                 || eType == EventType.MouseUp
                 || eType == EventType.MouseDrag)) Repaint();

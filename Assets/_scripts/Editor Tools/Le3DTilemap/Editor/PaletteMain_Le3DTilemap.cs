@@ -136,14 +136,12 @@ namespace Le3DTilemap {
         }
 
         private void DrawTileCard(TileData data, int index) {
-            if (data == null) {
-                shownTiles.Remove(data);
-                GUIUtility.ExitGUI();
-            } bool isSelected = SelectedTile == data;
+            bool isSelected = data && SelectedTile == data;
             using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(false))) {
                 DrawDragAndDropPreview(data, index, isSelected);
                 if (isSelected) GUI.color = UIColors.MidBlue;
-                GUIContent content = new(data.name, data.name);
+                string bottomTag = data ? data.name : "Missing";
+                GUIContent content = new(bottomTag, bottomTag);
                 GUILayout.Label(content, UIStyles.TextBoxLabel, GUILayout.Width(prefs.cardSize),
                                 GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 GUI.color = Color.white;
@@ -169,7 +167,7 @@ namespace Le3DTilemap {
                         bool leftClick = Event.current.button == 0;
                         bool rightClick = Event.current.button == 1;
                         if (mouseDown) {
-                            if (leftClick && data.IsValid) {
+                            if (leftClick && data && data.IsValid) {
                                 potentialDrag = data;
                             } else if (rightClick) {
                                 string[] optionsList = new[] { "Open/Data", "Open/Prefab", "Remove" };
@@ -178,7 +176,7 @@ namespace Le3DTilemap {
                                     new(MouseMenuOption.OpenData, data),
                                     new(MouseMenuOption.OpenPrefab, data),
                                     new(MouseMenuOption.Remove, data),
-                                }; bool[] disabled = new bool[] { false, !data.Prefab, false };
+                                }; bool[] disabled = new bool[] { !data, !data || !data.Prefab, false };
                                 EditorUtils.RequestDropdownCallback(new Rect(Event.current.mousePosition,
                                                                     Vector2.zero), optionsList, content,
                                                                     disabled, RemoveTileCallback);
@@ -200,7 +198,7 @@ namespace Le3DTilemap {
                     if (Event.current.type == EventType.DragExited && !isDrag) {
                         ToggleSelectedTile(prefs.activePalette.Tiles[index]);
                     }
-                } GUI.color = !data.IsValid ? UIColors.DarkRed
+                } GUI.color = (!data || !data.IsValid) ? UIColors.DarkRed
                             : isSelected ? UIColors.DefinedBlue 
                                          : new Vector4(1.25f, 1.25f, 1.25f, 1);
                 GUI.Label(buttonRect, "", isSelected ? GUI.skin.button : EditorStyles.textArea);
@@ -216,12 +214,13 @@ namespace Le3DTilemap {
                     width = buttonRect.width * 0.825f,
                     height = buttonRect.height * 0.825f
                 };
-                if (data.IsValid) {
+                if (data && data.IsValid) {
                     GUI.Label(buttonRect, data.Preview, previewStyle);
                 } else {
                     previewStyle.alignment = TextAnchor.MiddleCenter;
                     previewStyle.fontSize = 11;
-                    GUI.Label(buttonRect, "Invalid\nData", previewStyle);
+                    string invalidContext = data ? "Invalid\nData" : "Missing\nData";
+                    GUI.Label(buttonRect, invalidContext, previewStyle); 
                 }
             }
         }
