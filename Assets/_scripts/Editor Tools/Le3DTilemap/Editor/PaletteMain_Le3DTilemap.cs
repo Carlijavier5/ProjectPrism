@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using CJUtils;
 
 namespace Le3DTilemap {
@@ -13,6 +14,7 @@ namespace Le3DTilemap {
         private readonly string[] paletteDropdown = new string[] { "Create New..." };
         private readonly string[] tileAddDropdown = new string[] { "Add Tile...",
                                                                    "New Tile... " };
+        private enum MouseMenuOption { OpenData, OpenPrefab, Remove }
 
         private bool mouseInScope;
         private enum DragAndDropState { None, Invalid, TileData, Prefab }
@@ -72,6 +74,7 @@ namespace Le3DTilemap {
                     } else GUIUtils.DrawScopeCenteredText("No Tile Palette Selected");
                     if (Event.current.type == EventType.Repaint) {
                         mouseInScope = boxScope.rect.Contains(Event.current.mousePosition);
+                        alwaysRepaint = mouseInScope;
                     }
                 }
             }
@@ -133,8 +136,10 @@ namespace Le3DTilemap {
         }
 
         private void DrawTileCard(TileData data, int index) {
-            if (data == null) return;
-            bool isSelected = SelectedTile == data;
+            if (data == null) {
+                shownTiles.Remove(data);
+                GUIUtility.ExitGUI();
+            } bool isSelected = SelectedTile == data;
             using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(false))) {
                 DrawDragAndDropPreview(data, index, isSelected);
                 if (isSelected) GUI.color = UIColors.MidBlue;
@@ -164,12 +169,19 @@ namespace Le3DTilemap {
                         bool leftClick = Event.current.button == 0;
                         bool rightClick = Event.current.button == 1;
                         if (mouseDown) {
-                            if (leftClick) {
+                            if (leftClick && data.IsValid) {
                                 potentialDrag = data;
                             } else if (rightClick) {
-                                EditorUtils.RequestDropdownCallback(new Rect(Event.current.mousePosition, Vector2.zero),
-                                                                    new string[] { "Remove" }, new TileData[] { data },
-                                                                    RemoveTileCallback);
+                                string[] optionsList = new[] { "Open/Data", "Open/Prefab", "Remove" };
+                                (MouseMenuOption, TileData)[] content 
+                                    = new (MouseMenuOption, TileData)[] {
+                                    new(MouseMenuOption.OpenData, data),
+                                    new(MouseMenuOption.OpenPrefab, data),
+                                    new(MouseMenuOption.Remove, data),
+                                }; bool[] disabled = new bool[] { false, !data.Prefab, false };
+                                EditorUtils.RequestDropdownCallback(new Rect(Event.current.mousePosition,
+                                                                    Vector2.zero), optionsList, content,
+                                                                    disabled, RemoveTileCallback);
                             }
                         } else if (potentialDrag) {
                             if (CanDrag && mouseDrag) {
@@ -188,7 +200,9 @@ namespace Le3DTilemap {
                     if (Event.current.type == EventType.DragExited && !isDrag) {
                         ToggleSelectedTile(prefs.activePalette.Tiles[index]);
                     }
-                } GUI.color = isSelected ? UIColors.DefinedBlue : new Vector4(1.25f, 1.25f, 1.25f, 1);
+                } GUI.color = !data.IsValid ? UIColors.DarkRed
+                            : isSelected ? UIColors.DefinedBlue 
+                                         : new Vector4(1.25f, 1.25f, 1.25f, 1);
                 GUI.Label(buttonRect, "", isSelected ? GUI.skin.button : EditorStyles.textArea);
                 GUI.color = Color.white;
                 /// Resizing Logic:
@@ -196,10 +210,19 @@ namespace Le3DTilemap {
                 /// - Half of the subtracted width/height is added to center rect;
                 GUIStyle previewStyle = new(UIStyles.WindowBox) { padding = new RectOffset(2, 2, 2, 2),
                                                                   contentOffset = Vector2.zero };
-                GUI.Label(new (buttonRect) { x = buttonRect.x + buttonRect.width * 0.0875f,
-                                             y = buttonRect.y + buttonRect.height * 0.0875f,
-                                             width = buttonRect.width * 0.825f,
-                                             height = buttonRect.height * 0.825f }, data.Preview, previewStyle);
+                buttonRect = new(buttonRect) {
+                    x = buttonRect.x + buttonRect.width * 0.0875f,
+                    y = buttonRect.y + buttonRect.height * 0.0875f,
+                    width = buttonRect.width * 0.825f,
+                    height = buttonRect.height * 0.825f
+                };
+                if (data.IsValid) {
+                    GUI.Label(buttonRect, data.Preview, previewStyle);
+                } else {
+                    previewStyle.alignment = TextAnchor.MiddleCenter;
+                    previewStyle.fontSize = 11;
+                    GUI.Label(buttonRect, "Invalid\nData", previewStyle);
+                }
             }
         }
 
@@ -208,9 +231,19 @@ namespace Le3DTilemap {
         }
 
         private void RemoveTileCallback(object res) {
-            TileData data;
-            if (data = res as TileData) {
-                prefs.activePalette.Remove(data);
+            if (res is (MouseMenuOption, TileData)) {
+                (MouseMenuOption, TileData) o = ((MouseMenuOption, TileData)) res;
+                switch (o.Item1) {
+                    case MouseMenuOption.OpenData:
+                        EditorUtils.InspectorFocusAsset(o.Item2, true);
+                        break;
+                    case MouseMenuOption.OpenPrefab:
+                        AssetDatabase.OpenAsset(o.Item2.Prefab);
+                        break;
+                    case MouseMenuOption.Remove:
+                        prefs.activePalette.Remove(o.Item2);
+                        break;
+                }
             }
         }
 

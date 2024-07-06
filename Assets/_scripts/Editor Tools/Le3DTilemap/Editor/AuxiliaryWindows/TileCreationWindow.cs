@@ -18,6 +18,8 @@ namespace Le3DTilemap {
 
         private Editor preview;
         private GameObject prefab;
+
+        private TileInfo info;
         private PrefabAssetType prefabType;
         private string tileName = "No Prefab Selected";
         private string prefabName = "No Prefab Selected";
@@ -29,7 +31,7 @@ namespace Le3DTilemap {
         public static TileCreationWindow ShowAuxiliary(GameObject prefab) {
             TileCreationWindow window = GetWindow<TileCreationWindow>("New Tile Data");
             window.prefab = prefab;
-            if (prefab) window.tileName = prefab.name;
+            if (prefab) window.ProcessPrefab(prefab);
             window.ShowAuxWindow();
             return window;
         }
@@ -172,35 +174,36 @@ namespace Le3DTilemap {
                             GUILayout.Label("Prefab Settings", UIStyles.CenteredLabelBold);
                         } using (new EditorGUILayout.VerticalScope()) {
                             EditorGUILayout.GetControlRect(false, 2, GUILayout.Width(1));
+                            if (setupMode == 0) GUI.enabled = false;
                             using (new EditorGUILayout.HorizontalScope()) {
-                                if (setupMode == 0) GUI.enabled = false;
                                 GUILayout.Label("Prefab Name:");
                                 GUI.color = prefabNameValid == AssetUtils.InvalidNameCondition.None ? Color.white
                                                                                                  : UIColors.DarkRed;
                                 prefabName = EditorGUILayout.TextField(prefabName, GUILayout.Width(165));
                                 DrawTooltipLabel(prefabNameValid);
                                 GUI.color = Color.white;
-                                if (setupMode == 0) GUI.enabled = true;
                             } using (new EditorGUILayout.HorizontalScope()) {
                                 GUILayout.Label("Engine Complexity:");
-                                GUIContent content = new GUIContent("Static", "Static Tiles are:\n"
-                                                                  + "- Merged into larger meshes for optimization\n"
+                                GUIContent content = new GUIContent("Static", GUI.enabled ? "Static Tiles are:\n"
+                                                                  + "- Mergeable into larger meshes for optimization\n"
                                                                   + "- Significantly more performant than dynamic tiles\n"
                                                                   + "Static Tiles cannot:\n"
                                                                   + "- Move, rotate, or scale <b><i>at runtime</i></b>\n"
-                                                                  + "- Perform animations involving transform changes");
+                                                                  + "- Perform animations involving transform changes"
+                                                                  : string.Empty);
                                 GUIStyle style = new(GUI.skin.button) { margin = { right = 0, left = 0 } };
                                 Rect rect = EditorGUILayout.GetControlRect(false, 18, style,
                                                                            GUILayout.Width(92),
                                                                            GUILayout.ExpandWidth(true));
                                 rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
                                 DrawComplexityButton(rect, false, content, style);
-                                content = new GUIContent("Dynamic", "Dynamic Tiles are:\n"
+                                content = new GUIContent("Dynamic", GUI.enabled ? "Dynamic Tiles are:\n"
                                                        + "- Excluded from mesh-merging optimization\n"
                                                        + "- Significantly less performant than static tiles\n"
-                                                       + "Tiles should be Dynamic if:\n"
-                                                       + "- They must be moved, rotated, or scaled <b><i>at runtime</i></b>\n"
-                                                       + "- They contain animations that involve transform changes");
+                                                       + "Tiles should be Dynamic if they:\n"
+                                                       + "- Must be moved, rotated, or scaled <b><i>at runtime</i></b>\n"
+                                                       + "- Contain animations involving transform changes"
+                                                       : string.Empty);
                                 style = new(GUI.skin.button) { margin = { left = 0 } };
                                 rect = EditorGUILayout.GetControlRect(false, 18, style,
                                                                       GUILayout.Width(92),
@@ -209,10 +212,9 @@ namespace Le3DTilemap {
                                 DrawComplexityButton(rect, true, content, style);
                                 GUI.backgroundColor = Color.white;
                             } EditorGUILayout.GetControlRect(false, 2, GUILayout.Width(1));
+                            GUI.enabled = true;
+                            EditorGUIUtility.labelWidth = 0;
                         }
-
-                        GUI.enabled = true;
-                        EditorGUIUtility.labelWidth = 0;
 
                         EditorGUILayout.GetControlRect(GUILayout.Height(3));
                         GUIUtils.DrawSeparatorLine(UIColors.DarkGray);
@@ -241,7 +243,8 @@ namespace Le3DTilemap {
 
         private void ProcessPrefab(GameObject prefab) {
             prefabType = PrefabUtility.GetPrefabAssetType(prefab);
-            TileInfo info = prefab.GetComponentInChildren<TileInfo>();
+            info = prefab.GetComponentInChildren<TileInfo>();
+            if (info) setupMode = SetupMode.None;
             tileName = prefab.name;
             prefabName = prefab.name;
         }
@@ -262,12 +265,25 @@ namespace Le3DTilemap {
         }
 
         private void DisplayMessages() {
-
-            /*GUIUtils.DrawCustomHelpBox(" Missing Editor Node. Won't be added to Palette;",
-                                                       EditorUtils.FetchIcon("d_P4_Offline"));*/
-            GUIUtils.DrawCustomHelpBox(" Complexity: No collider edits required;", iconGood);
-            /*GUIUtils.DrawCustomHelpBox(" Complexity: Additional collider edits required;",
-                                       EditorUtils.FetchIcon("d_P4_OutOfSync"));*/
+            using (new EditorGUILayout.ScrollViewScope(Vector2.zero)) {
+                GUIStyle style = new(UIStyles.HelpBoxLabel) { padding = { top = 3, bottom = 3 } };
+                if (prefab != null) {
+                    if (info) {
+                        GUIUtils.DrawCustomHelpBox("The target prefab already contains TileInfo\n"
+                                                 + "Further setup is safe, but not required", iconHelp, style);
+                        if (setupMode > 0) {
+                            GUIUtils.DrawCustomHelpBox("Tile Info will be re-parented to preserve integrity\n"
+                                                     + "Check for unwanted nesting post-setup", iconHelp, style);
+                        }
+                    } string message = setupMode switch {
+                        SetupMode.Variant => "Setup modifications will output a new asset",
+                        SetupMode.InPlace => "The target prefab will be modified in-place",
+                        _ => "No changes will be made to the target prefab",
+                    }; GUIUtils.DrawCustomHelpBox(message, iconGood, style);
+                } else {
+                    GUIUtils.DrawCustomHelpBox("A Prefab is required to generate Tile Data", iconHelp, style);
+                }
+            }
         }
 
         private void DrawTooltipLabel(AssetUtils.InvalidNameCondition nameValidity) {
@@ -283,36 +299,57 @@ namespace Le3DTilemap {
         }
 
         private void CommitSetup() {
-            if (setupMode > 0) {
-                string path = AssemblePrefab(out bool success);
-                if (!success) {
-                    Debug.LogWarning($"Could not create/modify asset at {path}");
-                    return;
-                }
-            }/* TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
+            TileData newAsset = AssetUtils.CreateAsset<TileData>("New Tile Data", tileName.Trim());
             if (newAsset) {
-                newAsset.Prefab = prefab;
+                if (setupMode > 0) {
+                    string path = AssemblePrefab(out bool success);
+                    if (!success) {
+                        Debug.LogWarning($"Could not create/modify asset at {path}");
+                        return;
+                    }
+                } newAsset.Prefab = prefab;
                 EditorUtility.SetDirty(newAsset);
                 OnTileCreation?.Invoke(newAsset);
                 Close();
-            }*/
+            }
         }
 
         private string AssemblePrefab(out bool success) {
             GameObject mainRoot = new(prefabName);
             GameObject meshRoot = PrefabUtility.InstantiatePrefab(prefab, mainRoot.transform) as GameObject;
-            PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab, mainRoot.transform);
+            if (info) {
+                info = meshRoot.GetComponentInChildren<TileInfo>();
+                while (PrefabUtility.IsPartOfAnyPrefab(info.transform.parent)) {
+                    GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(info.transform.parent);
+                    PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.OutermostRoot,
+                                                       InteractionMode.AutomatedAction);
+                } info.transform.SetParent(mainRoot.transform);
+            } else {
+                GameObject infoInstance = PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab,
+                                                                          mainRoot.transform) as GameObject;
+                infoInstance.TryGetComponent(out info);
+            } info.MeshRoot = meshRoot.transform;
+
+            bool inPlace = setupMode == SetupMode.InPlace;
+
             string path = AssetDatabase.GetAssetPath(prefab);
-            string newName = AssetUtils.ProduceValidAssetName(path.RemovePathEnd("\\/"),
-                                                               prefabName, ".prefab");
-            string newPath = AssetUtils.ProduceValidAssetNotation(path.RemovePathEnd("\\/"),
-                                                                   newName, ".prefab");
-            if (setupMode == SetupMode.InPlace) {
+            string folder = path.RemovePathEnd("\\/");
+
+            bool directOverride = inPlace && prefabName == prefab.name;
+            string newName = directOverride ? prefab.name
+                           : AssetUtils.ProduceValidAssetName(folder, prefabName, ".prefab");
+            string newPath = directOverride ? path
+                           : AssetUtils.ProduceValidAssetNotation(folder, newName, ".prefab");
+
+            if (inPlace) {
                 AssetDatabase.RenameAsset(path, newName);
-                PrefabUtility.UnpackPrefabInstance(meshRoot, PrefabUnpackMode.Completely,
-                                   InteractionMode.AutomatedAction);
+                if (PrefabUtility.IsPartOfAnyPrefab(meshRoot)) {
+                    PrefabUtility.UnpackPrefabInstance(meshRoot, PrefabUnpackMode.Completely,
+                                                       InteractionMode.AutomatedAction);
+                }
             } meshRoot.name = $"Mesh Root ({prefab.name})";
-            PrefabUtility.SaveAsPrefabAsset(mainRoot, newPath, out success);
+            mainRoot.transform.DeepIterate((t) => t.gameObject.isStatic = !isDynamic);
+            GameObject newAsset = PrefabUtility.SaveAsPrefabAsset(mainRoot, newPath, out success);
             DestroyImmediate(mainRoot);
             return path;
         }

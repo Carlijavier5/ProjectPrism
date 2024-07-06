@@ -10,7 +10,7 @@ namespace Le3DTilemap {
             get => prefab;
             set {
                 prefab = value;
-                prefab.TryGetComponent(out info);
+                info = prefab.GetComponentInChildren<TileInfo>();
                 GetPreviewAsync();
             }
         }
@@ -20,7 +20,7 @@ namespace Le3DTilemap {
         public int HashVersion => info == null ? -1 : info.HashVersion;
 
         public bool IsValid => prefab != null
-                            && (info != null || prefab.TryGetComponent(out info))
+                            && info != null
                             && info.IsValid;
 
         [HideInInspector]

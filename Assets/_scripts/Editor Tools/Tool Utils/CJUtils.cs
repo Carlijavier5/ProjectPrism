@@ -405,16 +405,16 @@ namespace CJUtils {
 
         public static string ProduceValidAssetNotation(string location, string name,
                                                        string extension, int appendix = 0) {
-            string newName = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}{extension}";
-            return File.Exists(newName) ? ProduceValidAssetNotation(location, name, extension, appendix + 1)
-                                        : newName;
+            string newLocation = location + $"/{name}{(appendix == 0 ? "" : " " + appendix)}{extension}";
+            return File.Exists(newLocation) ? ProduceValidAssetNotation(location, name, extension, appendix + 1)
+                                        : newLocation;
         }
 
         public static string ProduceValidAssetName(string location, string name,
                                                    string extension, int appendix = 0) {
             string newName = $"{name}{(appendix == 0 ? "" : " " + appendix)}";
             string newLocation = location + $"/{newName}{extension}";
-            return File.Exists(newLocation) ? ProduceValidAssetNotation(location, name, extension, appendix + 1)
+            return File.Exists(newLocation) ? ProduceValidAssetName(location, name, extension, appendix + 1)
                                             : newName;
         }
 
@@ -663,6 +663,21 @@ namespace CJUtils {
                             GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(false));
         }
 
+        /* WORK IN PROGRESS
+        /// <summary>
+        /// Draws a Help Box with a custom icon;
+        /// </summary>
+        /// <param name="text"> Help Box message; </param>
+        /// <param name="texture"> Help Box icon; </param>
+        public static void DrawSplitHelpBox(string text, Texture texture, GUIStyle style) {
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
+                GUILayout.Label(texture, GUILayout.ExpandWidth(false),
+                                GUILayout.ExpandHeight(true));
+                GUILayout.Label(text, style, GUILayout.ExpandWidth(true),
+                                GUILayout.ExpandHeight(false));
+            }
+        }*/
+
         /// <summary>
         /// Draw a texture on the current layout;
         /// </summary>
@@ -728,13 +743,39 @@ namespace CJUtils {
         /// <param name="rect"> Dropdown origin; </param>
         /// <param name="elements"> Strings to display; </param>
         /// <param name="contents"> Objects to return; </param>
+        /// <param name="disabled"> Whether each element is enabled; </param>
         /// <param name="func"> Callback to fetch results; </param>
         public static void RequestDropdownCallback<T>(Rect rect, string[] elements, T[] contents,
-                                                      GenericMenu.MenuFunction2 func) where T : Object {
+                                                      bool[] disabled, GenericMenu.MenuFunction2 func) {
             GenericMenu menu = new();
             for (int i = 0; i < elements.Length; i++) {
-                menu.AddItem(new GUIContent(elements[i]), false, func, contents[i]);
+                if (disabled[i]) menu.AddDisabledItem(new GUIContent(elements[i]));
+                else menu.AddItem(new GUIContent(elements[i]), false, func, contents[i]);
             } menu.DropDown(rect);
+        }
+
+        /// <summary>
+        /// Request a menu dropdown displaying options and returning objects;
+        /// </summary>
+        /// <param name="rect"> Dropdown origin; </param>
+        /// <param name="elements"> Strings to display; </param>
+        /// <param name="contents"> Objects to return; </param>
+        /// <param name="func"> Callback to fetch results; </param>
+        public static void RequestDropdownCallback<T>(Rect rect, string[] elements, T[] contents,
+                                                      GenericMenu.MenuFunction2 func) {
+            bool[] disabled = new bool[elements.Length];
+            RequestDropdownCallback(rect, elements, contents, disabled, func);
+        }
+
+        /// <summary>
+        /// Bring inspector focus to an asset;
+        /// </summary>
+        /// <param name="asset"> Asset to focus the inspector on; </param>
+        /// <param name="ping"> Whether to ping the asset in the project window as well; </param>
+        public static void InspectorFocusAsset<T>(T asset, bool ping = false) where T : ScriptableObject {
+            Selection.activeObject = asset;
+            EditorApplication.ExecuteMenuItem("Window/General/Inspector");
+            if (ping) EditorGUIUtility.PingObject(asset);
         }
 
         /// <summary>
@@ -1189,6 +1230,19 @@ namespace CJUtils {
                 style.richText = true;
                 style.margin = new RectOffset(0, 0, 0, 0);
                 style.alignment = TextAnchor.UpperCenter;
+                return style;
+            }
+        }
+
+        public static GUIStyle TextHelpLabel {
+            get {
+                GUIStyle style = new GUIStyle(GUI.skin.label);
+                style.font = EditorStyles.helpBox.font;
+                style.fontSize = EditorStyles.helpBox.fontSize;
+                style.normal = EditorStyles.helpBox.normal;
+                style.richText = true;
+                style.margin = new RectOffset(0, 0, 0, 0);
+                style.alignment = TextAnchor.UpperLeft;
                 return style;
             }
         }

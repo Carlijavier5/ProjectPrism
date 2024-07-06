@@ -35,18 +35,23 @@ namespace Le3DTilemap {
             Resources.UnloadUnusedAssets();
         }
 
-        void Update() {
-            if (alwaysRepaint) Repaint();
-        }
-
         void OnGUI() {
+            ValidateRepaint();
             if (prefs is null) {
                 SceneViewUtils.DrawMissingSettingsPrompt(ref prefs, "Missing Window Preferences",
-                                                         "New Window Preferences Asset", 
+                                                         "New Window Preferences Asset",
                                                          iconSearch, iconPlus);
                 return;
             } DrawMainToolbar();
             DrawPaletteEditor();
+        }
+
+        public void ValidateRepaint() {
+            EventType eType = Event.current.type;
+            if (alwaysRepaint && (eType == EventType.MouseMove
+                || eType == EventType.MouseDown
+                || eType == EventType.MouseUp
+                || eType == EventType.MouseDrag)) Repaint();
         }
 
         private void DrawMainToolbar() {
