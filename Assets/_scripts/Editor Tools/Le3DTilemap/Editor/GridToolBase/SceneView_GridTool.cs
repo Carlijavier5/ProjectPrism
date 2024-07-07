@@ -13,7 +13,7 @@ namespace Le3DTilemap {
         private float gridHeightDiff;
 
         protected GridOrientation gridOrientation;
-        private GridSettingsPage settingsPage;
+        private GridSettingsPage gridSettingsPage;
 
         private const string GRID_ORIENTATION = "_Orientation";
         private const string GRID_FALLOFF_DIST = "_TDistance";
@@ -40,11 +40,11 @@ namespace Le3DTilemap {
         private void DrawHintWindow(Rect firstWindow, bool hasHint) {
             if (!hasHint) return;
             Handles.BeginGUI();
-            Rect rect = new(firstWindow) {
+            gridSettings.hintRect = new(firstWindow) {
                 y = firstWindow.y - 40,
                 height = 30,
-            }; GUILayout.Window(3, rect, DrawHintContent,
-                                "", EditorStyles.textArea);
+            }; GUILayout.Window(3, gridSettings.hintRect,
+                    DrawHintContent, "", EditorStyles.textArea);
             Handles.EndGUI();
         }
 
@@ -74,7 +74,7 @@ namespace Le3DTilemap {
                             GUI.color = Color.white;
                         } if (GUI.Button(buttonRect, iconSettings, EditorStyles.iconButton)) {
                             showGridSettings = !showGridSettings;
-                            if (showGridSettings) settingsPage = 0;
+                            if (showGridSettings) gridSettingsPage = 0;
                         } GUILayout.Space(4);
                     } else {
                         GUIContent content = new GUIContent(" Move", iconMove, "Move (W)");
@@ -127,7 +127,7 @@ namespace Le3DTilemap {
                                 GUIStyle style = new(GUI.skin.button) { margin = { left = 0 },
                                                                         contentOffset = new Vector2(0, -1),
                                                                         fontSize = 10 };
-                                if ((int) settingsPage < 2) {
+                                if ((int) gridSettingsPage < 2) {
                                     DrawSettingsPageButton(GridSettingsPage.Shortcuts,
                                                            new RectOffset() { right = 0 },
                                                            GUILayout.Width(78));
@@ -136,14 +136,14 @@ namespace Le3DTilemap {
                                                            GUILayout.Width(78));
                                     if (GUILayout.Button("▶", style, 
                                         GUILayout.Width(24), GUILayout.Height(19))) {
-                                        settingsPage = GridSettingsPage.Size;
+                                        gridSettingsPage = GridSettingsPage.Size;
                                     }
                                 } else {
                                     style = new(GUI.skin.button) { margin = { right = 0 },
                                                                    fontSize = 9 };
                                     if (GUILayout.Button("◀", style,
                                         GUILayout.Width(24), GUILayout.Height(19))) {
-                                        settingsPage = GridSettingsPage.Shortcuts;
+                                        gridSettingsPage = GridSettingsPage.Shortcuts;
                                     }
                                     DrawSettingsPageButton(GridSettingsPage.Size, 
                                                            new RectOffset() { right = 0 },
@@ -177,7 +177,7 @@ namespace Le3DTilemap {
                         GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
                         if (showGridSettings) {
                             using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                                switch (settingsPage) {
+                                switch (gridSettingsPage) {
                                     case GridSettingsPage.Shortcuts:
                                         using (new EditorGUILayout.HorizontalScope()) {
                                             GUILayout.FlexibleSpace();
@@ -280,11 +280,11 @@ namespace Le3DTilemap {
 
         private void DrawSettingsPageButton(GridSettingsPage page, RectOffset margin,
                                             params GUILayoutOption[] options) {
-            GUI.backgroundColor = settingsPage == page ? UIColors.DefinedBlue : Color.white;
+            GUI.backgroundColor = gridSettingsPage == page ? UIColors.DefinedBlue : Color.white;
             GUIStyle style = new(GUI.skin.button) { margin = margin };
             if (GUILayout.Button(System.Enum.GetName(typeof(GridSettingsPage), page),
                                  style, options)) {
-                settingsPage = page;
+                gridSettingsPage = page;
             } GUI.backgroundColor = Color.white;
         }
 
@@ -353,7 +353,7 @@ namespace Le3DTilemap {
 
         private void ResetGridWindowProperties() {
             showGridSettings = false;
-            settingsPage = 0;
+            gridSettingsPage = 0;
         }
     }
 }

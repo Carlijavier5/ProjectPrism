@@ -12,6 +12,7 @@ namespace Le3DTilemap {
 
         private bool showSettings;
         private bool willHide;
+        private float heightDiff;
 
         private string[] names;
 
@@ -59,11 +60,13 @@ namespace Le3DTilemap {
                         willHide = false;
                     } else if (Event.current.type == EventType.MouseUp) {
                         if (mouseInRect && willHide) {
-                            settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
+                            bool hide = settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
+                            if (settings.sceneGUI.hideContents) {
+                                heightDiff = settings.sceneGUI.rect.height * 0.75f;
+                            } float diffSign = hide ? 1 : -1;
                             settings.sceneGUI.rect = new Rect(settings.sceneGUI.rect) {
-                                y = settings.sceneGUI.rect.y
-                                + settings.sceneGUI.rect.height * 0.75f
-                                * (settings.sceneGUI.hideContents ? 1 : -1),
+                                y = settings.sceneGUI.rect.y + heightDiff * diffSign,
+                                height = settings.sceneGUI.rect.height - heightDiff * diffSign,
                             }; EditorUtility.SetDirty(settings);
                         } willHide = false;
                     }

@@ -21,7 +21,29 @@ namespace Le3DTilemap {
             set { wheelCD = EditorApplication.timeSinceStartup + value; }
         } protected bool pendingCast;
 
-        protected void DoScrollInput(SceneView sceneView) {
+        protected void DoGridInput(SceneView sceneView) {
+            DoInputOverrides();
+            DoScrollInput(sceneView);
+        }
+
+        private void DoInputOverrides() {
+            if (Event.current.type == EventType.KeyDown) {
+                switch (Event.current.keyCode) {
+                    case KeyCode.LeftControl:
+                        overrideInput = GridInputMode.Move;
+                        Event.current.Use();
+                        break;
+                    case KeyCode.R:
+                        overrideInput = GridInputMode.Turn;
+                        Event.current.Use();
+                        break;
+                }
+            } else if (Event.current.type == EventType.KeyUp) {
+                overrideInput = GridInputMode.None;
+            }
+        }
+
+        private void DoScrollInput(SceneView sceneView) {
             if (Event.current.type == EventType.ScrollWheel
                 && ((int) defaultInput > 0 || (int) overrideInput > 0)) {
                 if (WheelCD < 0) {
@@ -98,23 +120,6 @@ namespace Le3DTilemap {
                         gridQuad.Position = new Vector3(depth, center.y, center.z);
                         break;
                 }
-            }
-        }
-
-        protected void DoInputOverrides() {
-            if (Event.current.type == EventType.KeyDown) {
-                switch (Event.current.keyCode) {
-                    case KeyCode.LeftControl:
-                        overrideInput = GridInputMode.Move;
-                        Event.current.Use();
-                        break;
-                    case KeyCode.R:
-                        overrideInput = GridInputMode.Turn;
-                        Event.current.Use();
-                        break;
-                }
-            } else if (Event.current.type == EventType.KeyUp) {
-                overrideInput = GridInputMode.None;
             }
         }
 

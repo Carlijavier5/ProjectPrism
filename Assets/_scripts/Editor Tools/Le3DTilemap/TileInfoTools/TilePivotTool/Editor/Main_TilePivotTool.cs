@@ -36,15 +36,11 @@ namespace Le3DTilemap {
 
         protected override void OnSceneGUI(SceneView sceneView) {
             if (InvalidSceneGUI(settings, sceneView)) return;
-            if (gridSettings.sceneGUI.rect
-                .Contains(Event.current.mousePosition)
-                || settings.sceneGUI.rect
-                .Contains(Event.current.mousePosition)) {
+            if (MouseOnGUI(settings.sceneGUI.rect)) {
                 hasHint = false;
                 return;
-            } DoInputOverrides();
+            } DoGridInput(sceneView);
             DoSelectionInput();
-            DoScrollInput(sceneView);
         }
 
         public override void OnWillBeDeactivated() {

@@ -12,7 +12,6 @@ namespace Le3DTilemap {
 
         private Le3DTilemapTool tool;
         private Le3DTilemapWindowPrefs prefs;
-        private bool alwaysRepaint;
 
         private Texture2D iconSearch, iconPlus, iconGridBox,
                           iconGridPaint, iconGridPicking,
@@ -28,7 +27,9 @@ namespace Le3DTilemap {
             if (prefs is null) {
                 AssetUtils.TryRetrieveAsset(out prefs);
             } LoadIcons();
-            UpdateSearchResults(searchString, out shownTiles);
+            if (prefs && prefs.activePalette) {
+                UpdateSearchResults(searchString, out shownTiles);
+            }
         }
 
         void OnDisable() {
@@ -37,16 +38,31 @@ namespace Le3DTilemap {
 
         void OnGUI() {
             ValidateRepaint();
-            if (prefs is null) {
-                SceneViewUtils.DrawMissingSettingsPrompt(ref prefs, "Missing Window Preferences",
-                                                         "New Window Preferences Asset",
-                                                         iconSearch, iconPlus);
-                return;
+            if (HasNullSettings()) {
+                if (prefs && prefs.activePalette) {
+                    UpdateSearchResults(searchString, out shownTiles);
+                } return;
             } DrawMainToolbar();
             DrawPaletteEditor();
         }
 
-        public void ValidateRepaint() {
+        private bool HasNullSettings() {
+            bool missingPrefs = prefs == null;
+            if (missingPrefs) {
+                using (new EditorGUILayout.HorizontalScope()) {
+                    GUILayout.FlexibleSpace();
+                    using (new EditorGUILayout.VerticalScope()) {
+                        GUILayout.FlexibleSpace();
+                        SceneViewUtils.DrawMissingSettingsPrompt(ref prefs, "Missing Window Preferences",
+                                                             "New Window Preferences Asset",
+                                                             iconSearch, iconPlus);
+                        GUILayout.FlexibleSpace();
+                    } GUILayout.FlexibleSpace();
+                }
+            } return missingPrefs;
+        }
+
+        private void ValidateRepaint() {
             EventType eType = Event.current.type;
             if (mouseInScope && (eType == EventType.MouseMove
                 || eType == EventType.MouseDown

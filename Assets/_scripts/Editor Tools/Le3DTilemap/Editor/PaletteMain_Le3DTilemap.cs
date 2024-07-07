@@ -38,7 +38,10 @@ namespace Le3DTilemap {
                     using (var changeScope = new EditorGUI.ChangeCheckScope()) {
                         prefs.activePalette = EditorGUILayout.ObjectField(prefs.activePalette, typeof(TilePalette3D),
                                                                           false) as TilePalette3D;
-                        if (changeScope.changed) EditorUtility.SetDirty(prefs);
+                        if (changeScope.changed) {
+                            if (prefs.activePalette != null) UpdateSearchResults(searchString, out shownTiles);
+                            EditorUtility.SetDirty(prefs);
+                        }
                     } Rect rect = EditorGUILayout.GetControlRect(GUILayout.Width(20));
                     if (EditorGUI.DropdownButton(rect, GUIContent.none, FocusType.Keyboard)) {
                         EditorUtils.RequestDropdownCallback(rect, paletteDropdown, CreatePaletteCallback);
@@ -74,7 +77,6 @@ namespace Le3DTilemap {
                     } else GUIUtils.DrawScopeCenteredText("No Tile Palette Selected");
                     if (Event.current.type == EventType.Repaint) {
                         mouseInScope = boxScope.rect.Contains(Event.current.mousePosition);
-                        alwaysRepaint = mouseInScope;
                     }
                 }
             }
@@ -139,7 +141,9 @@ namespace Le3DTilemap {
             bool isSelected = data && SelectedTile == data;
             using (new EditorGUILayout.VerticalScope(GUILayout.ExpandWidth(false))) {
                 DrawDragAndDropPreview(data, index, isSelected);
-                if (isSelected) GUI.color = UIColors.MidBlue;
+                GUI.color = (!data || !data.IsValid) ? UIColors.DarkRed
+                          : isSelected ? UIColors.MidBlue
+                                       : Color.white;
                 string bottomTag = data ? data.name : "Missing";
                 GUIContent content = new(bottomTag, bottomTag);
                 GUILayout.Label(content, UIStyles.TextBoxLabel, GUILayout.Width(prefs.cardSize),
@@ -217,10 +221,12 @@ namespace Le3DTilemap {
                 if (data && data.IsValid) {
                     GUI.Label(buttonRect, data.Preview, previewStyle);
                 } else {
+                    GUI.color = UIColors.Red;
                     previewStyle.alignment = TextAnchor.MiddleCenter;
                     previewStyle.fontSize = 11;
                     string invalidContext = data ? "Invalid\nData" : "Missing\nData";
-                    GUI.Label(buttonRect, invalidContext, previewStyle); 
+                    GUI.Label(buttonRect, invalidContext, previewStyle);
+                    GUI.color = Color.white;
                 }
             }
         }

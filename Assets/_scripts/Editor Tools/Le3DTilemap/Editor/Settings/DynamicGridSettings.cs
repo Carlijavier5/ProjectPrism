@@ -10,6 +10,7 @@ namespace Le3DTilemap {
     public class DynamicGridSettings : ScriptableObject {
 
         [HideInInspector] public SceneViewWindowSettings sceneGUI;
+        [HideInInspector] public Rect hintRect;
 
         public GameObject quadPrefab;
         public Material baseMaterial, ignoreZMaterial;

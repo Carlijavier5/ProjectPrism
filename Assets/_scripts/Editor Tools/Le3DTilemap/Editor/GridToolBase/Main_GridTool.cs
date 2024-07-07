@@ -75,6 +75,15 @@ namespace Le3DTilemap {
 
         protected virtual void OnSceneGUI(SceneView sceneView) { }
 
+        protected bool MouseOnGUI(Rect settingsRect) {
+            return gridSettings.sceneGUI.rect
+                .Contains(Event.current.mousePosition)
+                || gridSettings.hintRect
+                .Contains(Event.current.mousePosition)
+                || settingsRect
+                .Contains(Event.current.mousePosition);
+        }
+
         protected bool InvalidSceneGUI<T>(T settings, SceneView sceneView)
                                           where T : ScriptableObject {
             return ToolManager.activeToolType != GetType()

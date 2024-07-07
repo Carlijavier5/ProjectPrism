@@ -36,13 +36,9 @@ namespace Le3DTilemap {
 
         protected override void OnSceneGUI(SceneView sceneView) {
             if (InvalidSceneGUI(settings, sceneView)
-                || gridSettings.sceneGUI.rect
-                .Contains(Event.current.mousePosition)
-                || settings.sceneGUI.rect
-                .Contains(Event.current.mousePosition)) {
+                || MouseOnGUI(settings.sceneGUI.rect)) {
                 return;
-            } DoInputOverrides();
-            DoScrollInput(sceneView);
+            } DoGridInput(sceneView);
             DoToolInput();
         }
 

@@ -5,50 +5,57 @@ using UnityEditor.EditorTools;
 using CJUtils;
 
 namespace Le3DTilemap {
-    public enum ToolMode { Move, Place, Pick }
+    public enum ToolMode { Select, MSelect, Paint, Erase, Fill, Pick }
 
     [EditorTool("Le3DTilemap")]
     public partial class Le3DTilemapTool : GridTool {
 
         public static event System.Action OnToolActivated;
 
-        [SerializeField] private Le3DTilemapSettings settings;
-        public Le3DTilemapSettings Settings => settings;
+        private Le3DTilemapSettings settings;
 
         private Le3DTilemapWindow window;
         private LevelGridHook sceneHook;
 
-        public override GUIContent toolbarIcon => EditorGUIUtility.IconContent("d_Tile Icon");
+        private GUIContent toolIcon;
+        private GUIContent ToolIcon {
+            get => toolIcon ??= new(EditorUtils.FetchIcon("d_Tile Icon"));
+        } public override GUIContent toolbarIcon => ToolIcon;
 
-        private Texture2D iconWarning, iconInfo;
+        private Texture2D iconWarning, iconSelect, iconMSelect, 
+                          iconPaint, iconErase, iconFill,
+                          iconPick;
 
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
         public static void Activate() => ToolManager.SetActiveTool<Le3DTilemapTool>();
 
         public override void OnActivated() {
+            base.OnActivated();
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
-            } window = Le3DTilemapWindow.Launch(this);
+            } allowDirectGridMode = false;
+            LoadIcons();
+
+            window = Le3DTilemapWindow.Launch(this);
             sceneHook = FindAnyObjectByType<LevelGridHook>();
             OnToolActivated?.Invoke();
             OnToolActivated = null;
-            LoadIcons();
         }
 
         public override void OnToolGUI(EditorWindow window) {
             if (window is not SceneView sceneView) { return; }
-            if (settings == null) {
-                SceneViewUtils.DrawMissingSettingsPrompt(ref settings, sceneView,
-                                                         "Missing Tool Settings",
-                                                         "New Le3DTilemap Settings",
-                                                         iconPlus, iconSearch);
-                return;
-            } if (sceneHook == null) {
-                DrawSceneViewWindowHeader();
-                return;
-            }
-            DrawSceneViewWindowHeader();
+            if (HasNullSettings(ref settings, sceneView)) return;
+            DrawGridWindow(sceneView, true);
+            DrawSceneViewWindowHeader(sceneView);
         }
+
+        protected override void OnSceneGUI(SceneView sceneView) {
+            base.OnSceneGUI(sceneView);
+            if (InvalidSceneGUI(settings, sceneView)) return;
+            if (MouseOnGUI(settings.sceneGUI.rect)) return;
+            DoGridInput(sceneView);
+        }
+
         /*
         public void InputHandling(SceneView sceneView) {
             sceneView.sceneViewState.alwaysRefresh = Event.current.type == EventType.MouseMove
@@ -68,13 +75,20 @@ namespace Le3DTilemap {
         }*/
 
         public override void OnWillBeDeactivated() {
+            base.OnWillBeDeactivated();
+            settings = null;
             Resources.UnloadUnusedAssets();
         }
 
         protected override void LoadIcons() {
             base.LoadIcons();
             EditorUtils.LoadIcon(ref iconWarning, EditorUtils.ICON_WARNING);
-            EditorUtils.LoadIcon(ref iconInfo, EditorUtils.ICON_INFO);
+            EditorUtils.LoadIcon(ref iconSelect, "d_Grid.Default");
+            EditorUtils.LoadIcon(ref iconMSelect, "d_Grid.BoxTool");
+            EditorUtils.LoadIcon(ref iconPaint, "d_Grid.PaintTool");
+            EditorUtils.LoadIcon(ref iconErase, "d_Grid.EraserTool");
+            EditorUtils.LoadIcon(ref iconFill, "d_Grid.FillTool");
+            EditorUtils.LoadIcon(ref iconPick, "d_Grid.PickingTool");
         }
     }
 }
