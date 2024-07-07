@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -97,13 +97,13 @@ namespace Le3DTilemap {
                         using (var changeScope = new EditorGUI.ChangeCheckScope()) {
                             EditorGUIUtility.labelWidth = 0;
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Highlight Scope:", GUILayout.Width(97));
+                                GUILayout.Label("Highlight Scope", GUILayout.Width(97));
                                 GUILayout.FlexibleSpace();
                                 settings.drawDistributionScope = (DrawDistributionScope) EditorGUILayout.EnumPopup(
                                                                  settings.drawDistributionScope, GUILayout.Width(75));
                             }
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Highlight Mode:", GUILayout.Width(97));
+                                GUILayout.Label("Highlight Mode", GUILayout.Width(97));
                                 GUILayout.FlexibleSpace();
                                 settings.drawDistributionMode = (DrawDistributionMode) EditorGUILayout.EnumPopup(
                                                                 settings.drawDistributionMode, GUILayout.Width(75));
@@ -117,7 +117,7 @@ namespace Le3DTilemap {
                                 case ToolMode.Select:
                                     using (new EditorGUILayout.HorizontalScope()) {
                                         using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                                            GUILayout.Label("Letter Name:");
+                                            GUILayout.Label("Letter Name");
                                             int collName = Info.SelectedCollider.name - 65;
                                             GUIStyle style = new(EditorStyles.popup) { alignment = TextAnchor.MiddleCenter };
                                             collName = EditorGUILayout.Popup(collName, names, style, GUILayout.Width(80));
@@ -128,7 +128,7 @@ namespace Le3DTilemap {
                                             }
                                         }
                                     } using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Component:");
+                                        GUILayout.Label("Component");
                                         GUI.enabled = false;
                                         EditorGUILayout.ObjectField(Info.SelectedCollider.collider,
                                                                     typeof(BoxCollider), false, GUILayout.Width(80));
@@ -136,12 +136,12 @@ namespace Le3DTilemap {
                                     } break;
                                 case ToolMode.Scale:
                                     using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Size:", GUILayout.Width(45));
+                                        GUILayout.Label("Size", GUILayout.Width(45));
                                         GUILayout.FlexibleSpace();
                                         EditorGUIUtility.labelWidth = 0;
                                         TileUtils.TileSizeField(Info.SelectedCollider, GUILayout.Width(125));
                                     } using (new EditorGUILayout.HorizontalScope()) {
-                                        GUILayout.Label("Center:", GUILayout.Width(45));
+                                        GUILayout.Label("Center", GUILayout.Width(45));
                                         EditorGUIUtility.labelWidth = 0;
                                         GUILayout.FlexibleSpace();
                                         GUI.enabled = false;
@@ -153,20 +153,24 @@ namespace Le3DTilemap {
                                 case ToolMode.Pivot:
                                     using (new EditorGUILayout.VerticalScope()) {
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Select Pivot Tile:", GUILayout.Width(100));
+                                            GUILayout.Label("Collider Pivot", GUILayout.Width(80));
+                                            GUILayout.FlexibleSpace();
+                                            GUIStyle style = new(GUI.skin.label) { fontSize = 10 };
+                                            GUILayout.Label("→", style, GUILayout.Width(14));
                                             GUILayout.FlexibleSpace();
                                             Rect rect = EditorGUILayout.GetControlRect(GUILayout.Width(67));
                                             GUI.backgroundColor = toolMode == ToolMode.Pivot ? UIColors.DefinedBlue
                                                                                                 : Color.white;
-                                            if (GUI.Button(new(rect) { y = rect.y - 1 }, 
-                                                            new GUIContent(" Pick", iconPivot))) {
+                                            if (GUI.Button(new(rect) { y = rect.y - 1 },
+                                                           new GUIContent(" Pick", iconPivot))) {
                                                 toolMode = toolMode == ToolMode.Pivot ? ToolMode.Move : ToolMode.Pivot;
                                             } GUI.backgroundColor = Color.white;
                                         } using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Pivot:", GUILayout.Width(45));
+                                            EditorGUIUtility.labelWidth = 0;
+                                            GUILayout.Label("Position", GUILayout.Width(48));
                                             GUILayout.FlexibleSpace();
                                             Info.SelectedCollider.Pivot = EditorGUILayout.Vector3IntField("",
-                                                                            Info.SelectedCollider.Pivot, GUILayout.Width(125));
+                                                                            Info.SelectedCollider.Pivot, GUILayout.Width(123));
                                         }
                                     } break;
                             }

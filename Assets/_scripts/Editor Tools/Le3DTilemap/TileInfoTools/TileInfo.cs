@@ -95,7 +95,7 @@ namespace Le3DTilemap {
                 } RecordTilespaceChange();
             }
 
-            if (rotatesMesh) {
+            if (meshRoot && rotatesMesh) {
                 UndoUtils.RecordScopeUndo(meshRoot, "Tilespace Rotation (Transform)");
                 meshRoot.localPosition = tMatrix.MultiplyPoint3x4(meshRoot.localPosition).Round();
                 meshRoot.RotateAround(meshRoot.position, normal, 90 * signDelta);
