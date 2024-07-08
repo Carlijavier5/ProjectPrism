@@ -43,6 +43,13 @@ namespace Le3DTilemap {
         [HideInInspector]
         [SerializeField] private SerializableHashSet<Vector3Int> tilespace;
         public SerializableHashSet<Vector3Int> Tilespace => tilespace ??= new();
+
+        [HideInInspector]
+        [SerializeField] private TileInstanceData instanceData;
+        public TileInstanceData InstanceData {
+            get => instanceData;
+            set => instanceData = value;
+        }
         
         [SerializeField] private int hashVersion;
         public int HashVersion => hashVersion;

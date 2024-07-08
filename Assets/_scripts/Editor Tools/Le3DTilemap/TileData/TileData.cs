@@ -9,15 +9,20 @@ namespace Le3DTilemap {
         public GameObject Prefab {
             get => prefab;
             set {
-                prefab = value;
-                info = prefab.GetComponentInChildren<TileInfo>();
+                if (prefab != value) {
+                    prefab = value;
+                    hashVersion++;
+                } info = prefab.GetComponentInChildren<TileInfo>();
                 GetPreviewAsync();
             }
         }
 
         [SerializeField] private TileInfo info;
         public TileInfo Info => info;
-        public int HashVersion => info == null ? -1 : info.HashVersion;
+
+        private int hashVersion;
+        public int TileHashVersion => hashVersion;
+        public int PrefabHashVersion => info == null ? -1 : info.HashVersion;
 
         public bool IsValid => prefab != null
                             && info != null
