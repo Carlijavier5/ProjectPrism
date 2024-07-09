@@ -46,10 +46,10 @@ namespace Le3DTilemap {
 
         [HideInInspector]
         [SerializeField] private TileInstanceData instanceData;
-        public TileInstanceData InstanceData {
-            get => instanceData;
-            set => instanceData = value;
-        }
+        public TileInstanceData InstanceData => instanceData;
+
+        [SerializeField] private bool isInstance;
+        public bool IsInstance => isInstance;
         
         [SerializeField] private int hashVersion;
         public int HashVersion => hashVersion;
@@ -60,6 +60,19 @@ namespace Le3DTilemap {
         public bool IsValid => Tilespace.Count > 0;
 
         void OnValidate() => HideTransformAndColliders();
+
+        public void InstanceInit(TileData data, GameObject gameObject,
+                                 Vector3Int position, Vector3Int tileRotation) {
+            InstanceInit(data, gameObject, position, tileRotation, tileRotation);
+        }
+
+        public void InstanceInit(TileData data, GameObject gameObject,
+                                 Vector3Int position, Vector3Int tileRotation,
+                                 Vector3 meshRotation) {
+            isInstance = true;
+            instanceData = new TileInstanceData(data, gameObject, position, 
+                                                tileRotation, meshRotation);
+        }
 
         public void TranslatePivot(Vector3Int diff, bool translateColliders,
                            bool translateMesh) {

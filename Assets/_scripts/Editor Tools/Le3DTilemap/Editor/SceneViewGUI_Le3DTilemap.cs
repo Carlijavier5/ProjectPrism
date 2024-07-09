@@ -8,8 +8,7 @@ namespace Le3DTilemap {
     public partial class Le3DTilemapTool {
 
         private GridSettingsPage settingsPage;
-        private ToolMode defaultToolMode;
-        private ToolMode overrideToolMode;
+        private ToolMode toolMode;
 
         private bool willHide;
         private bool showSettings;
@@ -200,13 +199,19 @@ namespace Le3DTilemap {
 
         private void DrawToolModeButton(Rect rect, ToolMode mode,
                                         GUIContent content, GUIStyle style) {
-            GUI.backgroundColor = overrideToolMode == mode ? UIColors.DefinedGreen
-                                : defaultToolMode == mode ? UIColors.DefinedBlue
-                                                       : Color.white;
+            GUI.backgroundColor = toolMode == mode ? UIColors.DefinedBlue
+                                                   : Color.white;
             if (GUI.Button(rect, content, style)) {
-                defaultToolMode = defaultToolMode == mode ? ToolMode.Select
-                                                    : mode;
-                overrideToolMode = ToolMode.Select;
+                SetToolMode(toolMode);
+            }
+        }
+
+        private void SetToolMode(ToolMode toolMode) {
+            this.toolMode = toolMode;
+            switch (toolMode) {
+                case ToolMode.Paint:
+                case ToolMode.Fill:
+                    break;
             }
         }
     }

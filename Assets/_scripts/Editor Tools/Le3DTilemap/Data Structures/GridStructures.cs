@@ -22,14 +22,15 @@ namespace Le3DTilemap {
 
         public Vector3Int position;
         public Vector3Int tileRotation;
-        public Quaternion meshRotation;
+        public Vector3 meshRotation;
 
-        public TileInstanceData(Vector3Int position, Vector3Int tileRotation,
-                                GameObject gameObject, TileData data) {
+        public TileInstanceData(TileData data, GameObject gameObject, Vector3Int position, 
+                                Vector3Int tileRotation, Vector3 meshRotation) {
+            this.data = data;
+            this.gameObject = gameObject;
             this.position = position;
             this.tileRotation = tileRotation;
-            this.gameObject = gameObject;
-            this.data = data;
+            this.meshRotation = meshRotation;
         }
     }
 }

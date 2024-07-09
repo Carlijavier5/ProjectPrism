@@ -36,6 +36,7 @@ namespace Le3DTilemap {
             } allowDirectGridMode = false;
             LoadIcons();
 
+            LoadPhysicsScene(out physicsSpace);
             window = Le3DTilemapWindow.Launch(this);
             sceneHook = FindAnyObjectByType<LevelGridHook>();
             OnToolActivated?.Invoke();
@@ -54,6 +55,7 @@ namespace Le3DTilemap {
             if (InvalidSceneGUI(settings, sceneView)) return;
             if (MouseOnGUI(settings.sceneGUI.rect)) return;
             DoGridInput(sceneView);
+            DoToolInput(sceneView);
         }
 
         /*

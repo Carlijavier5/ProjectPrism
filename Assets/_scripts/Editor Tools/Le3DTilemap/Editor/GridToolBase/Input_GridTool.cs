@@ -1,10 +1,7 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.EditorTools;
-using CJUtils;
 
 namespace Le3DTilemap {
-
     public abstract partial class GridTool {
 
         private const float OFFSET = 0.5f;

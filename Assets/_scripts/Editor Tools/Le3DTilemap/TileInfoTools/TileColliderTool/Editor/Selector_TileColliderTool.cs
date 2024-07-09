@@ -66,7 +66,7 @@ namespace Le3DTilemap {
                     if (RaycastCD > 0) {
                         pendingCast = true;
                     } else {
-                        RaycastCD = 0.1f;
+                        RaycastCD = gridSettings.raycastCDMult * 0.005f;
                         DoSelectionSignal(EventType.MouseMove);
                     } break;
                 case EventType.MouseUp:

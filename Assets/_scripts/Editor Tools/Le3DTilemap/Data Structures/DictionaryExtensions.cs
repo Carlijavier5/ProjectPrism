@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Le3DTilemap {
     [System.Serializable]
-    public class RootMapStorage : SerializableDictionary.Storage<List<TileInfo>> {
+    public class RootMapStorage : SerializableDictionary.Storage<SerializableHashSet<TileInfo>> {
         public RootMapStorage() => data = new();
     }
 
