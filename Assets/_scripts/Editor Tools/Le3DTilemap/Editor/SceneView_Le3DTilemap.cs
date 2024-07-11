@@ -127,32 +127,35 @@ namespace Le3DTilemap {
                                                            GUILayout.Width(52));
                                 }
                             } else {
-                                GUIContent content = new GUIContent(iconSelect, "Select (W)");
+                                GUIContent content = toolMode == ToolMode.MSelect ? new GUIContent(iconMSelect, "Multi-Select (W)")
+                                                                                  : new GUIContent(iconSelect, "Select (W)");
                                 GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
                                 Rect rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                            GUILayout.Width(45));
                                 rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
-                                DrawToolModeButton(rect, ToolMode.Select, content, style);
+                                DrawToolModeButton(rect, ToolMode.Select, ToolMode.MSelect, content, style);
 
-                                content = new GUIContent(iconPaint, "Paint (R)");
+                                content = toolMode == ToolMode.Erase ? new GUIContent(iconErase, "Erase (P)")
+                                                                     : new GUIContent(iconPaint, "Paint (P)");
                                 style = new(GUI.skin.button) { margin = { right = 0, left = 0 } };
                                 rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                       GUILayout.Width(45));
                                 rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
-                                DrawToolModeButton(rect, ToolMode.Paint, content, style);
+                                DrawToolModeButton(rect, ToolMode.Paint, ToolMode.Erase, content, style);
 
-                                content = new GUIContent(iconFill, "Fill (R)");
+                                content = toolMode == ToolMode.Clear ? new GUIContent(iconFill, "Clear (F)")
+                                                                     : new GUIContent(iconFill, "Fill (F)");
                                 rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                       GUILayout.Width(45));
                                 rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
-                                DrawToolModeButton(rect, ToolMode.Fill, content, style);
+                                DrawToolModeButton(rect, ToolMode.Fill, ToolMode.Clear, content, style);
 
-                                content = new GUIContent(iconPick, "Pick (R)");
+                                content = new GUIContent(iconPick, "Pick (K)");
                                 style = new(GUI.skin.button) { margin = { left = 0 } };
                                 rect = EditorGUILayout.GetControlRect(false, 19, style,
                                                                       GUILayout.Width(45));
                                 rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
-                                DrawToolModeButton(rect, ToolMode.Pick, content, style);
+                                DrawToolModeButton(rect, ToolMode.Pick, ToolMode.Pick, content, style);
 
                                 GUI.enabled = true;
                                 GUI.backgroundColor = Color.white;
@@ -187,6 +190,21 @@ namespace Le3DTilemap {
             }
         }
 
+        protected override void DrawHintContent(int controlID) {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(208), GUILayout.MinHeight(0))) {
+                using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
+                    string space = "---";
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label($"X: {(HasHint ? HintTile.x.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label($"Y: {(HasHint ? HintTile.y.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label($"Z: {(HasHint ? HintTile.z.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.FlexibleSpace();
+                }
+            }
+        }
+
         private void DrawSettingsPageButton(GridSettingsPage page, RectOffset margin,
                                     params GUILayoutOption[] options) {
             GUI.backgroundColor = settingsPage == page ? UIColors.DefinedBlue : Color.white;
@@ -197,12 +215,13 @@ namespace Le3DTilemap {
             } GUI.backgroundColor = Color.white;
         }
 
-        private void DrawToolModeButton(Rect rect, ToolMode mode,
+        private void DrawToolModeButton(Rect rect, ToolMode mode1, ToolMode mode2,
                                         GUIContent content, GUIStyle style) {
-            GUI.backgroundColor = toolMode == mode ? UIColors.DefinedBlue
-                                                   : Color.white;
+            GUI.backgroundColor = toolMode == mode1 || toolMode == mode2
+                                ? UIColors.DefinedBlue : Color.white;
             if (GUI.Button(rect, content, style)) {
-                SetToolMode(toolMode);
+                if (toolMode == mode1) SetToolMode(mode2);
+                else SetToolMode(mode1);
             }
         }
 

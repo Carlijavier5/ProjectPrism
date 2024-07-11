@@ -8,10 +8,8 @@ namespace Le3DTilemap {
 
     public partial class TilePivotTool {
 
-        private Vector3Int hintTile;
         private Vector3Int pickedTile;
         private bool hasPicked;
-        private bool hasHint;
 
         private double raycastCD;
         private double RaycastCD {
@@ -21,14 +19,14 @@ namespace Le3DTilemap {
 
         private void HighlightHintTile() {
             if (Event.current.type == EventType.Repaint) {
-                if (hasHint) {
+                if (HasHint) {
                     if (hasPicked) {
                         HandleUtils.DrawOctohedralVolume(pickedTile, Vector3.one,
                                                          new Vector4(1, 0, 0, 0.25f),
                                                          Color.white);
                     } else {
                         using (new Handles.DrawingScope(UIColors.Blue)) {
-                            Handles.DrawWireCube(hintTile, Vector3.one * 0.75f);
+                            Handles.DrawWireCube(HintTile, Vector3.one * 0.75f);
                         }
                     }
                 } HandleUtils.DrawDottedOctohedron(Info.transform.position,
@@ -66,11 +64,10 @@ namespace Le3DTilemap {
             Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             plane.Raycast(ray, out float enter);
             if (enter >= 0 && enter <= gridSettings.raycastDistance) {
-                hasHint = true;
                 Vector3Int hitTile = ray.GetPoint(enter).Round();
                 switch (eventType) {
                     case EventType.MouseMove:
-                        hintTile = hitTile;
+                        HintTile = hitTile;
                         break;
                     case EventType.MouseDown:
                         hasPicked = true;
@@ -94,11 +91,11 @@ namespace Le3DTilemap {
                         } ResetSelection();
                         break;
                 }
-            } else hasHint = false;
+            } else ClearHint();
         }
 
         private void ResetSelection() {
-            hasHint = false;
+            ClearHint();
             hasPicked = false;
         }
     }

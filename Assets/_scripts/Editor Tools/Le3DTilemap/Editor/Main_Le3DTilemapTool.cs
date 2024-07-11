@@ -5,7 +5,7 @@ using UnityEditor.EditorTools;
 using CJUtils;
 
 namespace Le3DTilemap {
-    public enum ToolMode { Select, MSelect, Paint, Erase, Fill, Pick }
+    public enum ToolMode { Select, MSelect, Paint, Erase, Fill, Clear, Pick }
 
     [EditorTool("Le3DTilemap")]
     public partial class Le3DTilemapTool : GridTool {

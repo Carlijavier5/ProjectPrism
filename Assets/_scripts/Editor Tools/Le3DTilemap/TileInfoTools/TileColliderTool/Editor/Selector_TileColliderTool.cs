@@ -83,7 +83,8 @@ namespace Le3DTilemap {
         private void DoSelectionSignal(EventType eventType) {
             pendingCast = false;
             Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-            if (physicsSpace.Raycast(ray.origin, ray.direction, out RaycastHit hit, 1000f, 1 << 6)
+            if (physicsSpace.Raycast(ray.origin, ray.direction, 
+                out RaycastHit hit, gridSettings.raycastDistance, 1 << 6)
                 && hit.collider.TryGetComponent(out TileInfo info)) {
                 TileCollider collider = info.FindColliderInfo(hit.collider as BoxCollider,
                                                               out int index);

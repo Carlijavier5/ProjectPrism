@@ -12,11 +12,21 @@ namespace Le3DTilemap {
         protected Plane plane;
         protected int depth;
 
+        private Vector3Int hintTile;
+        protected Vector3Int HintTile {
+            get => hintTile;
+            set { hintTile = value;
+                  HasHint = true; }
+        }
+        protected bool HasHint { get; private set; }
+
         protected double wheelCD;
         protected double WheelCD {
             get => EditorApplication.timeSinceStartup > wheelCD ? -1 : 1;
             set { wheelCD = EditorApplication.timeSinceStartup + value; }
         } protected bool pendingCast;
+
+        protected bool viewBehindQuad;
 
         protected void DoGridInput(SceneView sceneView) {
             DoInputOverrides();
@@ -55,14 +65,7 @@ namespace Le3DTilemap {
             int intDelta = (int) Mathf.Sign(delta);
             switch (activeMode) {
                 case GridInputMode.Move:
-                    if (this.gridOrientation switch { 
-                            GridOrientation.XZ
-                            => sceneView.camera.transform.position.y,
-                            GridOrientation.XY
-                            => sceneView.camera.transform.position.z,
-                            _
-                            => sceneView.camera.transform.position.x,
-                        } < depth) {
+                    if (CameraBehindQuad(sceneView)) {
                         intDelta *= -1;
                     } depth += intDelta;
                     pendingCast = true;
@@ -70,7 +73,7 @@ namespace Le3DTilemap {
                     WheelCD = 0.075;
                     break;
                 case GridInputMode.Turn:
-                    int orientation = ((int) this.gridOrientation + intDelta) % 3;
+                    int orientation = ((int) gridOrientation + intDelta) % 3;
                     orientation = (orientation < 0) ? 3 + orientation : orientation;
                     SetGridOrientation((GridOrientation) orientation);
                     WheelCD = 0.25;
@@ -97,7 +100,8 @@ namespace Le3DTilemap {
                     nonNormalAxis = new Vector3(0, gridQuad.Position.y,
                                                 gridQuad.Position.z);
                     break;
-            } gridQuad.Position = nonNormalAxis + normal * (depth - OFFSET);
+            } float offset = OFFSET * (viewBehindQuad ? 1 : -1);
+            gridQuad.Position = nonNormalAxis + normal * (depth + offset);
             plane = new Plane(normal, nonNormalAxis + normal * depth);
         }
 
@@ -105,7 +109,8 @@ namespace Le3DTilemap {
             if (Event.current.type == EventType.Repaint) {
                 Vector3Int center = (gridSettings.followCamera ? sceneView.camera.transform.position
                                                            : Vector3.zero).Round();
-                float depth = this.depth - OFFSET;
+                float offset = OFFSET * (this.viewBehindQuad ? 1 : -1);
+                float depth = this.depth + offset;
                 switch (gridOrientation) {
                     case GridOrientation.XZ:
                         gridQuad.Position = new Vector3(center.x, depth, center.z);
@@ -116,9 +121,24 @@ namespace Le3DTilemap {
                     case GridOrientation.YZ:
                         gridQuad.Position = new Vector3(depth, center.y, center.z);
                         break;
+                } bool viewBehindQuad = CameraBehindQuad(sceneView);
+                if (viewBehindQuad != this.viewBehindQuad) {
+                    this.viewBehindQuad = viewBehindQuad;
+                    UpdateGridDepth();
                 }
-            }
+            } 
         }
+
+        protected void ClearHint() => HasHint = false;
+
+        protected bool CameraBehindQuad(SceneView sceneView) => gridOrientation switch {
+            GridOrientation.XZ
+            => sceneView.camera.transform.position.y,
+            GridOrientation.XY
+            => sceneView.camera.transform.position.z,
+            _
+            => sceneView.camera.transform.position.x,
+        } < depth;
 
         protected void ResetGridInput() {
             defaultInput = 0;

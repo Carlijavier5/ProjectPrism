@@ -37,7 +37,7 @@ namespace Le3DTilemap {
         protected override void OnSceneGUI(SceneView sceneView) {
             if (InvalidSceneGUI(settings, sceneView)) return;
             if (MouseOnGUI(settings.sceneGUI.rect)) {
-                hasHint = false;
+                ClearHint();
                 return;
             } DoGridInput(sceneView);
             DoSelectionInput();

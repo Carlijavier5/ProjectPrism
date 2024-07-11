@@ -90,11 +90,11 @@ namespace Le3DTilemap {
                 using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
                     string space = "---";
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label($"X: {(hasHint ? hintTile.x.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.Label($"X: {(HasHint ? HintTile.x.ToString() : space)}", GUILayout.Width(45));
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label($"Y: {(hasHint ? hintTile.y.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.Label($"Y: {(HasHint ? HintTile.y.ToString() : space)}", GUILayout.Width(45));
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label($"Z: {(hasHint ? hintTile.z.ToString() : space)}", GUILayout.Width(45));
+                    GUILayout.Label($"Z: {(HasHint ? HintTile.z.ToString() : space)}", GUILayout.Width(45));
                     GUILayout.FlexibleSpace();
                 }
             }
