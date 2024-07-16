@@ -233,7 +233,7 @@ namespace Le3DTilemap {
             pendingCast = false;
             bool standardHit = false;
 
-            if (!Event.current.control) {
+            if (!GridKey) {
                 Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
                 if (physicsSpace.Raycast(ray.origin, ray.direction,
                     out RaycastHit hit, gridSettings.raycastDistance, 1 << 6)) {

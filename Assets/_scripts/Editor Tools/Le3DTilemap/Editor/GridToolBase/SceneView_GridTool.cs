@@ -50,7 +50,10 @@ namespace Le3DTilemap {
 
         private void DrawGridSceneViewWindow(int controlID) {
             if (!gridSettings) return;
+            GUI.color = GridKey && gridSettings.sceneGUI.hideContents
+                        ? new Vector4(0.5f, 2f, 4f, 1) : Color.white;
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(208), GUILayout.MinHeight(0))) {
+                GUI.color = Color.white;
                 using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
                     GUILayout.Space(8);
                     Rect rect = GUILayoutUtility.GetRect(30, 14);
@@ -122,7 +125,10 @@ namespace Le3DTilemap {
                 } else {
                     using (new EditorGUILayout.HorizontalScope()) {
                         GUILayout.FlexibleSpace();
+                        GUI.color = GridKey && !gridSettings.sceneGUI.hideContents
+                                    ? new Vector4(0.25f, 1.5f, 3f, 1) : Color.white;
                         using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox)) {
+                            GUI.color = Color.white;
                             if (showGridSettings) {
                                 GUIStyle style = new(GUI.skin.button) { margin = { left = 0 },
                                                                         contentOffset = new Vector2(0, -1),
@@ -313,6 +319,7 @@ namespace Le3DTilemap {
                 GridOrientation.XY => Vector3.zero,
                 _ => new Vector3(0, 90, 0),
             }; gridOrientation = orientation;
+            AdjustDepthToHint();
             UpdateGridDepth();
         }
 

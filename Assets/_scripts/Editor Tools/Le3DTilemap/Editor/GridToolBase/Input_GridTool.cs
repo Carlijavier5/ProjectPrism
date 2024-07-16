@@ -9,6 +9,8 @@ namespace Le3DTilemap {
         protected GridInputMode defaultInput;
         protected GridInputMode overrideInput;
 
+        protected bool GridKey => Event.current.control;
+
         protected Plane plane;
         protected int depth;
 
@@ -34,9 +36,9 @@ namespace Le3DTilemap {
         }
 
         private void DoInputOverrides() {
-            if (Event.current.type == EventType.KeyDown) {
+            if (GridKey && Event.current.type == EventType.KeyDown) {
                 switch (Event.current.keyCode) {
-                    case KeyCode.LeftControl:
+                    case KeyCode.W:
                         overrideInput = GridInputMode.Move;
                         Event.current.Use();
                         break;
@@ -127,6 +129,16 @@ namespace Le3DTilemap {
                     UpdateGridDepth();
                 }
             } 
+        }
+
+        protected void AdjustDepthToHint() {
+            if (HasHint) {
+                depth = gridOrientation switch {
+                    GridOrientation.XZ => hintTile.y,
+                    GridOrientation.XY => hintTile.z,
+                    _ => hintTile.x,
+                };
+            }
         }
 
         protected void ClearHint() => HasHint = false;
