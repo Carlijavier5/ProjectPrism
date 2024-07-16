@@ -16,6 +16,7 @@ namespace Le3DTilemap {
 
         public override void OnActivated() {
             SceneView.duringSceneGui += OnSceneGUI;
+            SceneView.lastActiveSceneView.showGrid = false;
             if (gridSettings is null) {
                 AssetUtils.TryRetrieveAsset(out gridSettings);
             } if (gridSettings is not null) {
@@ -81,7 +82,8 @@ namespace Le3DTilemap {
                 || gridSettings.hintRect
                 .Contains(Event.current.mousePosition)
                 || settingsRect
-                .Contains(Event.current.mousePosition);
+                .Contains(Event.current.mousePosition)
+                || Event.current.type == EventType.MouseLeaveWindow;
         }
 
         protected bool InvalidSceneGUI<T>(T settings, SceneView sceneView)

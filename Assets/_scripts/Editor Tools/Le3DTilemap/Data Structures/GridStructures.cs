@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Le3DTilemap {
@@ -24,13 +26,21 @@ namespace Le3DTilemap {
         public Vector3Int tileRotation;
         public Vector3 meshRotation;
 
+        public Vector3[] colliderCenters;
+
         public TileInstanceData(TileData data, GameObject gameObject, Vector3Int position, 
                                 Vector3Int tileRotation, Vector3 meshRotation) {
             this.data = data;
             this.gameObject = gameObject;
+
             this.position = position;
             this.tileRotation = tileRotation;
             this.meshRotation = meshRotation;
+
+            colliderCenters = new Vector3[data.Info.Colliders.Count];
+            for (int i = 0; i < data.Info.Colliders.Count; i++) {
+                colliderCenters[i] = data.Info.Colliders[i].Center + position;
+            }
         }
     }
 }

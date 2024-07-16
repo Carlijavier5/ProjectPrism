@@ -49,14 +49,16 @@ namespace Le3DTilemap {
             if (HasNullSettings(ref settings, sceneView)) return;
             DrawGridWindow(sceneView, true);
             DrawSceneViewWindowHeader(sceneView);
-            DrawAreaSelection();
+            HighlightModeContent(sceneView);
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
             base.OnSceneGUI(sceneView);
             if (InvalidSceneGUI(settings, sceneView)) return;
-            if (MouseOnGUI(settings.sceneGUI.rect)) return;
-            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            if (MouseOnGUI(settings.sceneGUI.rect)) {
+                ClearHint();
+                return;
+            } HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             DoGridInput(sceneView);
             DoToolInput(sceneView);
         }

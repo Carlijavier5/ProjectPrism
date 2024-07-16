@@ -230,6 +230,22 @@ namespace Le3DTilemap {
             } pendingHash = false;
         }
 
+        public void HighlightTilespaceVolume(Color surface, Color outline) {
+            for (int i = 0; i < colliders.Count; i++) {
+                HandleUtils.DrawOctohedralVolume(instanceData.colliderCenters[i],
+                                                 colliders[i].Size, surface, outline);
+            }
+        }
+
+        public void HighlightTilespaceWireframe(Color color) {
+            using (new Handles.DrawingScope(color)) {
+                for (int i = 0; i < colliders.Count; i++) {
+                    Handles.DrawWireCube(instanceData.colliderCenters[i],
+                                         colliders[i].Size);
+                }
+            }
+        }
+
         void OnDestroy() {
             foreach (TileCollider collider in colliders) {
                 collider.Dispose();

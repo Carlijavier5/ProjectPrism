@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
@@ -16,7 +15,20 @@ namespace Le3DTilemap {
             set { raycastCD = EditorApplication.timeSinceStartup + value; }
         }
 
-        public void LoadPhysicsScene(out PhysicsScene physicsSpace) {
+        private void HighlightModeContent(SceneView sceneView) {
+             switch (toolMode) {
+                case ToolMode.Select:
+                    break;
+                case ToolMode.MSelect:
+                    DrawAreaSelection();
+                    break;
+                case ToolMode.Paint:
+
+                    break;
+            }
+        }
+
+        private void LoadPhysicsScene(out PhysicsScene physicsSpace) {
             PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
             if (prefabStage != null) {
                 physicsSpace = prefabStage.scene.GetPhysicsScene();
@@ -228,6 +240,12 @@ namespace Le3DTilemap {
     public partial class Le3DTilemapTool {
 
         private Vector3[] highlightCenters;
+
+        private void DrawPaintHint() {
+            if (HasHint) {
+                
+            }
+        }
 
         private void DoPaintSignal(EventType eventType) {
             pendingCast = false;
