@@ -348,7 +348,8 @@ namespace Le3DTilemap {
                                                        InteractionMode.AutomatedAction);
                 }
             } meshRoot.name = $"Mesh Root ({prefab.name})";
-            mainRoot.transform.DeepIterate((t) => t.gameObject.isStatic = !isDynamic);
+            mainRoot.transform.DeepIterate((t) => { t.gameObject.isStatic = !isDynamic;
+                                                    t.gameObject.layer = 1 << 6; });
             GameObject newAsset = PrefabUtility.SaveAsPrefabAsset(mainRoot, newPath, out success);
             DestroyImmediate(mainRoot);
             return path;

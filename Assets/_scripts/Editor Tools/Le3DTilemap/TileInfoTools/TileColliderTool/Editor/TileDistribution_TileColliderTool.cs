@@ -7,8 +7,6 @@ using UnityEditor;
 namespace Le3DTilemap {
     public partial class TileColliderTool {
 
-        private const float OFFSET = 0.5f;
-
         private void DrawTileDistribution() {
             switch (settings.drawDistributionScope) {
                 case DrawDistributionScope.Selection:

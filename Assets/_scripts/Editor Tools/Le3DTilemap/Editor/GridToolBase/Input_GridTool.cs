@@ -4,7 +4,7 @@ using UnityEditor;
 namespace Le3DTilemap {
     public abstract partial class GridTool {
 
-        private const float OFFSET = 0.5f;
+        protected const float OFFSET = 0.5f;
 
         protected GridInputMode defaultInput;
         protected GridInputMode overrideInput;

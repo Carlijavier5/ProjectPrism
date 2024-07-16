@@ -24,7 +24,8 @@ namespace Le3DTilemap {
 
         private Texture2D iconWarning, iconSelect, iconMSelect, 
                           iconPaint, iconErase, iconFill,
-                          iconPick;
+                          iconClear, iconPick, iconTransform,
+                          iconDisplace, iconRotate;
 
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
         public static void Activate() => ToolManager.SetActiveTool<Le3DTilemapTool>();
@@ -48,12 +49,14 @@ namespace Le3DTilemap {
             if (HasNullSettings(ref settings, sceneView)) return;
             DrawGridWindow(sceneView, true);
             DrawSceneViewWindowHeader(sceneView);
+            DrawAreaSelection();
         }
 
         protected override void OnSceneGUI(SceneView sceneView) {
             base.OnSceneGUI(sceneView);
             if (InvalidSceneGUI(settings, sceneView)) return;
             if (MouseOnGUI(settings.sceneGUI.rect)) return;
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             DoGridInput(sceneView);
             DoToolInput(sceneView);
         }
@@ -90,7 +93,11 @@ namespace Le3DTilemap {
             EditorUtils.LoadIcon(ref iconPaint, "d_Grid.PaintTool");
             EditorUtils.LoadIcon(ref iconErase, "d_Grid.EraserTool");
             EditorUtils.LoadIcon(ref iconFill, "d_Grid.FillTool");
+            EditorUtils.LoadIcon(ref iconClear, "_Clear");
             EditorUtils.LoadIcon(ref iconPick, "d_Grid.PickingTool");
+            EditorUtils.LoadIcon(ref iconTransform, "d_RectTransform Icon");
+            EditorUtils.LoadIcon(ref iconDisplace, "d_UnityEditor.Graphs.AnimatorControllerTool");
+            EditorUtils.LoadIcon(ref iconRotate, "d_preAudioLoopOff");
         }
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using CJUtils;
 
 namespace Le3DTilemap {
     public partial class Le3DTilemapTool {
@@ -31,7 +32,10 @@ namespace Le3DTilemap {
                     DoRaycastInput(DoSingleSelectionSignal);
                     break;
                 case ToolMode.MSelect:
-                    DoMSelectInput();
+                    DoRaycastInput(DoAreaSelectionSignal);
+                    break;
+                case ToolMode.Paint:
+                    DoRaycastInput(DoPaintSignal);
                     break;
             }
         }
@@ -40,6 +44,7 @@ namespace Le3DTilemap {
             if (Event.current.button > 0) return;
             switch (Event.current.type) {
                 case EventType.MouseMove:
+                case EventType.MouseDrag:
                     if (RaycastCD > 0) {
                         pendingCast = true;
                     } else {
@@ -102,6 +107,29 @@ namespace Le3DTilemap {
         private Vector3Int areaStart;
         private Vector3Int areaEnd;
 
+        private void DrawAreaSelection() {
+            if (Event.current.type == EventType.Repaint) {
+                if (HasHint) {
+                    using (new Handles.DrawingScope(UIColors.Blue)) {
+                        Handles.DrawWireCube(HintTile, Vector3.one * 0.75f);
+                    }
+                }
+                switch (areaDrawState) {
+                    case AreaDrawState.Drag:
+                    case AreaDrawState.EndAwait:
+                        Vector3 center1 = (areaStart - Vector3.one * OFFSET + areaEnd + Vector3.one * OFFSET) / 2;
+                        Vector3 size1 = ((areaEnd - areaStart).Abs() + Vector3.one);
+                        HandleUtils.DrawOctohedralVolume(center1, size1, Color.blue, Color.blue);
+                        break;
+                    case AreaDrawState.MarkCorners:
+                        if (HasHint) {
+                            Vector3 center2 = (areaStart - Vector3.one * OFFSET + areaEnd + Vector3.one * OFFSET) / 2;
+                            HandleUtils.DrawOctohedralVolume(center2, (areaEnd - areaStart).Abs() + Vector3.one, Color.blue, Color.blue);
+                        } break;
+                }
+            }
+        }
+
         /*
         private void HighlightHintTile() {
             if (Event.current.type == EventType.Repaint) {
@@ -124,10 +152,6 @@ namespace Le3DTilemap {
                 }
             }
         }*/
-
-        private void DoMSelectInput() {
-            DoRaycastInput(DoAreaSelectionSignal);
-        }
 
         private void DoAreaSelectionSignal(EventType eventType) {
             pendingCast = false;
@@ -191,12 +215,82 @@ namespace Le3DTilemap {
                     if (hintTile == areaEnd) {
                         AreaSelectOutput();
                     } else { /* Reset */ }
+                    areaDrawState = AreaDrawState.None;
                     break;
             }
         }
 
         private void AreaSelectOutput() {
+            Debug.Log($"Start: {areaStart} | End: {areaEnd}");
+        }
+    }
 
+    public partial class Le3DTilemapTool {
+
+        private Vector3[] highlightCenters;
+
+        private void DoPaintSignal(EventType eventType) {
+            pendingCast = false;
+            bool standardHit = false;
+
+            if (!Event.current.control) {
+                Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+                if (physicsSpace.Raycast(ray.origin, ray.direction,
+                    out RaycastHit hit, gridSettings.raycastDistance, 1 << 6)) {
+                    standardHit = true;
+                    Vector3Int hintTile = (hit.point + hit.normal * OFFSET).Round();
+                    switch (eventType) {
+                        case EventType.MouseMove:
+                            PaintMove(hintTile, false);
+                            break;
+                        case EventType.MouseDown:
+                            PaintDown(hintTile);
+                            break;
+                        case EventType.MouseUp:
+                            RaycastCD = gridSettings.raycastCDMult * 0.025f;
+                            break;
+                    }
+                }
+            } 
+
+            if (!standardHit) {
+                Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+                if (plane.Raycast(ray, out float enter)
+                    && enter <= gridSettings.raycastDistance) {
+                    Vector3Int hintTile = ray.GetPoint(enter).Round();
+                    switch (eventType) {
+                        case EventType.MouseMove:
+                            PaintMove(hintTile, true);
+                            break;
+                        case EventType.MouseDown:
+                            PaintDown(hintTile);
+                            break;
+                        case EventType.MouseUp:
+                            RaycastCD = gridSettings.raycastCDMult * 0.025f;
+                            break;
+                    }
+                } else ClearHint();
+            }
+        }
+
+        private void PaintMove(Vector3Int hintTile, bool allowDrag) {
+            if (HintTile != hintTile) {
+                if (allowDrag && Event.current.type == EventType.MouseDrag) {
+                    /// Paint on new tile;
+                } else {
+                    /// Recompute highlight;
+                }
+            } SetPaintHint(hintTile);
+        }
+
+        private void SetPaintHint(Vector3Int hintTile) {
+            highlightCenters.Offset(hintTile - HintTile);
+            HintTile = hintTile;
+        }
+
+        private void PaintDown(Vector3Int paintDown) {
+            /// Paint on grid;
+            ClearHint();
         }
     }
 }
