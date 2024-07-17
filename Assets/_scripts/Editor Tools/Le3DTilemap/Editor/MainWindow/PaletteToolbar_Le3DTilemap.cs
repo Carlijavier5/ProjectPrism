@@ -29,26 +29,29 @@ namespace Le3DTilemap {
                     GUI.enabled = string.IsNullOrEmpty(searchString);
                     PaletteEditMode editMode  = (PaletteEditMode) EditorGUILayout.EnumPopup(activeEditMode, style,
                                                                         GUILayout.MinWidth(75), GUILayout.MaxWidth(120));
-                    if (GUI.enabled) prefs.editMode = editMode;
+                    if (GUI.enabled) settings.editMode = editMode;
                     GUI.enabled = true;
-                    if (changeScope.changed) EditorUtility.SetDirty(prefs);
+                    if (changeScope.changed) {
+                        UpdateSearchResults(searchString, out shownTiles);
+                        EditorUtility.SetDirty(settings);
+                    }
                 }
             }
         }
 
         private void UpdateSearchResults(string searchString, out List<TileData> tiles) {
             if (string.IsNullOrWhiteSpace(searchString)) {
-                tiles = prefs.activePalette.Tiles;
-                activeEditMode = prefs.editMode;
+                tiles = settings.activePalette.Tiles;
+                activeEditMode = settings.editMode;
             } else {
-                tiles = prefs.activePalette.Tiles.FindAll((tile) => tile.name.Contains(searchString,
+                tiles = settings.activePalette.Tiles.FindAll((tile) => tile.name.Contains(searchString,
                                                                     System.StringComparison.OrdinalIgnoreCase));
                 activeEditMode = PaletteEditMode.Focused;
             }
         }
 
         private void CreatePaletteCallback(object res) {
-            prefs.activePalette = AssetUtils.CreateAsset<TilePalette3D>("New Tile Palette",
+            settings.activePalette = AssetUtils.CreateAsset<TilePalette3D>("New Tile Palette",
                                                                         "New Palette");
         }
 
@@ -68,14 +71,14 @@ namespace Le3DTilemap {
         private void OPCallback(object res, bool state) {
             TileData newTile = res as TileData;
             if (newTile != null) {
-                prefs.activePalette.Add(newTile);
+                settings.activePalette.Add(newTile);
                 UpdateSearchResults(searchString, out shownTiles);
             }
         }
 
         private void Window_OnTileCreation(TileData tileData) {
             if (tileData) {
-                prefs.activePalette.Add(tileData);
+                settings.activePalette.Add(tileData);
                 UpdateSearchResults(searchString, out shownTiles);
             }
         }

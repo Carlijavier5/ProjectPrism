@@ -28,6 +28,42 @@ namespace Le3DTilemap {
             }
         }
 
+        private void DrawCustomCursor(SceneView sceneView) {
+            switch (toolMode) {
+                case ToolMode.Select:
+                    if (selectionInfoHint) {
+                        AddCustomCursor(sceneView, iconSelect, Vector2.zero);
+                    } break;
+                case ToolMode.MSelect:
+                    if (areaDrawState > 0) {
+                        AddCustomCursor(sceneView, iconMSelect, new Vector2());
+                    } break;
+                case ToolMode.Paint:
+                    if (selectedTile && HasHint) {
+                        AddCustomCursor(sceneView, iconPaint, new Vector2());
+                    } break;
+                case ToolMode.Erase:
+                    AddCustomCursor(sceneView, iconErase, new Vector2());
+                    break;
+                case ToolMode.Fill:
+                    AddCustomCursor(sceneView, iconFill, new Vector2());
+                    break;
+                case ToolMode.Clear:
+                    AddCustomCursor(sceneView, iconClear, new Vector2());
+                    break;
+                case ToolMode.Pick:
+                    AddCustomCursor(sceneView, iconPick, new Vector2());
+                    break;
+            }
+
+
+        }
+
+        private void AddCustomCursor(SceneView sceneView, Texture2D texture, Vector2 hotspot) {
+            Cursor.SetCursor(texture, hotspot, CursorMode.Auto);
+            EditorGUIUtility.AddCursorRect(sceneView.position, MouseCursor.CustomCursor);
+        }
+
         private void LoadPhysicsScene(out PhysicsScene physicsSpace) {
             PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
             if (prefabStage != null) {
@@ -135,8 +171,9 @@ namespace Le3DTilemap {
                         break;
                     case AreaDrawState.MarkCorners:
                         if (HasHint) {
-                            Vector3 center2 = (areaStart - Vector3.one * OFFSET + areaEnd + Vector3.one * OFFSET) / 2;
-                            HandleUtils.DrawOctohedralVolume(center2, (areaEnd - areaStart).Abs() + Vector3.one, Color.blue, Color.blue);
+                            Vector3 center2 = (areaStart - Vector3.one * OFFSET + HintTile + Vector3.one * OFFSET) / 2;
+                            Vector3 size2 = ((HintTile - areaStart).Abs() + Vector3.one);
+                            HandleUtils.DrawOctohedralVolume(center2, size2, Color.blue, Color.blue);
                         } break;
                 }
             }
@@ -189,6 +226,7 @@ namespace Le3DTilemap {
         private void AreaSelectMove(Vector3Int hintTile) {
             switch (areaDrawState) {
                 case AreaDrawState.None:
+                case AreaDrawState.MarkCorners:
                     HintTile = hintTile;
                     break;
                 case AreaDrawState.StartAwait:
@@ -243,7 +281,7 @@ namespace Le3DTilemap {
 
         private void DrawPaintHint() {
             if (HasHint) {
-                
+
             }
         }
 
@@ -302,7 +340,7 @@ namespace Le3DTilemap {
         }
 
         private void SetPaintHint(Vector3Int hintTile) {
-            highlightCenters.Offset(hintTile - HintTile);
+            ///highlightCenters.Offset(hintTile - HintTile);
             HintTile = hintTile;
         }
 

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+using UnityEditor.EditorTools;
 using CJUtils;
 
 namespace Le3DTilemap {
@@ -23,7 +23,11 @@ namespace Le3DTilemap {
         private PaletteEditMode activeEditMode;
         private bool CanDrag => activeEditMode == PaletteEditMode.Editable;
 
-        private TileData SelectedTile { get; set; }
+        public TileData SelectedTile {
+            get => tool == null ? null : tool.SelectedTile;
+            set => tool.SelectedTile = value;
+        }
+
         private TileData potentialDrag;
         private bool isDrag;
 
@@ -36,11 +40,11 @@ namespace Le3DTilemap {
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(iconTilemap);
                     using (var changeScope = new EditorGUI.ChangeCheckScope()) {
-                        prefs.activePalette = EditorGUILayout.ObjectField(prefs.activePalette, typeof(TilePalette3D),
+                        settings.activePalette = EditorGUILayout.ObjectField(settings.activePalette, typeof(TilePalette3D),
                                                                           false) as TilePalette3D;
                         if (changeScope.changed) {
-                            if (prefs.activePalette != null) UpdateSearchResults(searchString, out shownTiles);
-                            EditorUtility.SetDirty(prefs);
+                            if (settings.activePalette != null) UpdateSearchResults(searchString, out shownTiles);
+                            EditorUtility.SetDirty(settings);
                         }
                     } Rect rect = EditorGUILayout.GetControlRect(GUILayout.Width(20));
                     if (EditorGUI.DropdownButton(rect, GUIContent.none, FocusType.Keyboard)) {
@@ -62,9 +66,9 @@ namespace Le3DTilemap {
                 using (var boxScope = new EditorGUILayout.VerticalScope(EditorStyles.numberField,
                                                                           GUILayout.ExpandHeight(true))) {
                     GUI.enabled = true;
-                    if (prefs.activePalette is not null) {
+                    if (settings.activePalette is not null) {
                         DrawPaletteToolbar();
-                        if (prefs.activePalette.Count == 0) {
+                        if (settings.activePalette.Count == 0) {
                             GUIUtils.DrawScopeCenteredText("Tile Palette is Empty");
                         } else {
                             if (!string.IsNullOrEmpty(searchString)) {
@@ -122,11 +126,11 @@ namespace Le3DTilemap {
                 } GUILayout.FlexibleSpace();
             } else {
                 int amountPerRow = Mathf.CeilToInt((position.xMax - position.xMin - 10)
-                                                   / (prefs.cardSize * prefs.cardSizeMultiplier + 7)) - 1;
+                                                   / (settings.cardSize * settings.cardSizeMultiplier + 7)) - 1;
                 using (new EditorGUILayout.VerticalScope()) {
                     for (int i = 0; i < Mathf.CeilToInt(((float) tiles.Count) / amountPerRow); i++) {
                         EditorGUILayout.GetControlRect(GUILayout.Height(1));
-                        using (new EditorGUILayout.HorizontalScope(GUILayout.Width(prefs.cardSize * prefs.cardSizeMultiplier))) {
+                        using (new EditorGUILayout.HorizontalScope(GUILayout.Width(settings.cardSize * settings.cardSizeMultiplier))) {
                             for (int j = i * amountPerRow; j < Mathf.Min((i + 1) * amountPerRow, tiles.Count); j++) {
                                 if (j != i * amountPerRow) EditorGUILayout.GetControlRect(GUILayout.Width(1));
                                 DrawTileCard(tiles[j], j);
@@ -146,7 +150,7 @@ namespace Le3DTilemap {
                                        : Color.white;
                 string bottomTag = data ? data.name : "Missing";
                 GUIContent content = new(bottomTag, bottomTag);
-                GUILayout.Label(content, UIStyles.TextBoxLabel, GUILayout.Width(prefs.cardSize),
+                GUILayout.Label(content, UIStyles.TextBoxLabel, GUILayout.Width(settings.cardSize),
                                 GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 GUI.color = Color.white;
             }
@@ -154,15 +158,15 @@ namespace Le3DTilemap {
 
         private void DrawDragAndDropPreview(TileData data, int index, bool isSelected) {
             using (new EditorGUILayout.VerticalScope()) {
-                Rect buttonRect = GUILayoutUtility.GetRect(prefs.cardSize, prefs.cardSize,
+                Rect buttonRect = GUILayoutUtility.GetRect(settings.cardSize, settings.cardSize,
                                                            GUILayout.ExpandWidth(false));
                 if (mouseInScope && buttonRect.Contains(Event.current.mousePosition)) {
                     bool mouseUp = Event.current.type == EventType.MouseUp;
                     if (DragAndDrop.objectReferences.Length == 1) {
                         TileData draggedTile = DragAndDrop.objectReferences[0] as TileData;
-                        if (draggedTile && prefs.activePalette.Tiles[index] != draggedTile) {
-                            bool wasPresent = prefs.activePalette.Remove(draggedTile);
-                            prefs.activePalette.Insert(index, draggedTile);
+                        if (draggedTile && settings.activePalette.Tiles[index] != draggedTile) {
+                            bool wasPresent = settings.activePalette.Remove(draggedTile);
+                            settings.activePalette.Insert(index, draggedTile);
                             if (!wasPresent) GUIUtility.ExitGUI();
                         }
                     } else {
@@ -200,7 +204,7 @@ namespace Le3DTilemap {
                         }
                     } /// Breathing room for short dragged clicks;
                     if (Event.current.type == EventType.DragExited && !isDrag) {
-                        ToggleSelectedTile(prefs.activePalette.Tiles[index]);
+                        ToggleSelectedTile(settings.activePalette.Tiles[index]);
                     }
                 } GUI.color = (!data || !data.IsValid) ? UIColors.DarkRed
                             : isSelected ? UIColors.DefinedBlue 
@@ -232,7 +236,12 @@ namespace Le3DTilemap {
         }
 
         private void ToggleSelectedTile(TileData data) {
-            SelectedTile = SelectedTile == data ? null :data;
+            if (tool) {
+                SelectedTile = SelectedTile == data ? null : data;
+            } else if (!settings.launchToolOnSelect) {
+                ToolManager.SetActiveTool<Le3DTilemapTool>();
+                SelectTileAsync(data);
+            }
         }
 
         private void RemoveTileCallback(object res) {
@@ -246,7 +255,7 @@ namespace Le3DTilemap {
                         AssetDatabase.OpenAsset(o.Item2.Prefab);
                         break;
                     case MouseMenuOption.Remove:
-                        prefs.activePalette.Remove(o.Item2);
+                        settings.activePalette.Remove(o.Item2);
                         break;
                 }
             }
@@ -256,6 +265,17 @@ namespace Le3DTilemap {
             isDrag = false;
             await Task.Delay(100);
             isDrag = true;
+        }
+
+        private async void SelectTileAsync(TileData data) {
+            bool lifetimeExpired = false;
+            using (var timer = new System.Threading.Timer((obj) => { lifetimeExpired = true; }, 
+                                                          null, 2000, 2000)) {
+                while (!tool && !lifetimeExpired) {
+                    await Task.Yield();
+                    if (tool) SelectedTile = data;
+                }
+            }
         }
     }
 }

@@ -27,6 +27,15 @@ namespace Le3DTilemap {
                           iconClear, iconPick, iconTransform,
                           iconDisplace, iconRotate;
 
+        private TileData selectedTile;
+        public TileData SelectedTile {
+            get => selectedTile;
+            set {
+                /// Generate collider center array;
+                selectedTile = value;
+            } 
+        }
+
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
         public static void Activate() => ToolManager.SetActiveTool<Le3DTilemapTool>();
 
@@ -58,7 +67,8 @@ namespace Le3DTilemap {
             if (MouseOnGUI(settings.sceneGUI.rect)) {
                 ClearHint();
                 return;
-            } HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+            } DrawCustomCursor(sceneView);
+            HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
             DoGridInput(sceneView);
             DoToolInput(sceneView);
         }
@@ -90,13 +100,13 @@ namespace Le3DTilemap {
         protected override void LoadIcons() {
             base.LoadIcons();
             EditorUtils.LoadIcon(ref iconWarning, EditorUtils.ICON_WARNING);
-            EditorUtils.LoadIcon(ref iconSelect, "d_Grid.Default");
-            EditorUtils.LoadIcon(ref iconMSelect, "d_Grid.BoxTool");
-            EditorUtils.LoadIcon(ref iconPaint, "d_Grid.PaintTool");
-            EditorUtils.LoadIcon(ref iconErase, "d_Grid.EraserTool");
-            EditorUtils.LoadIcon(ref iconFill, "d_Grid.FillTool");
+            EditorUtils.LoadIcon(ref iconSelect, "_Select");
+            EditorUtils.LoadIcon(ref iconMSelect, "_MultiSelect");
+            EditorUtils.LoadIcon(ref iconPaint, "_Paint");
+            EditorUtils.LoadIcon(ref iconErase, "_Erase");
+            EditorUtils.LoadIcon(ref iconFill, "_Fill");
             EditorUtils.LoadIcon(ref iconClear, "_Clear");
-            EditorUtils.LoadIcon(ref iconPick, "d_Grid.PickingTool");
+            EditorUtils.LoadIcon(ref iconPick, "_Pick");
             EditorUtils.LoadIcon(ref iconTransform, "d_RectTransform Icon");
             EditorUtils.LoadIcon(ref iconDisplace, "d_UnityEditor.Graphs.AnimatorControllerTool");
             EditorUtils.LoadIcon(ref iconRotate, "d_preAudioLoopOff");

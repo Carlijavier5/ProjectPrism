@@ -407,23 +407,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a4c861cd9204a445b5b805d29cbe12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  distributionMap:
-    m_keys:
-    - {fileID: 11400000, guid: f18d235532b8b1342867f473db0a3c82, type: 2}
-    m_values:
-    - data:
-      - data: {fileID: 0}
-        gameObject: {fileID: 0}
-        position: {x: 0, y: 0, z: 0}
-        tileRotation: {x: 0, y: 0, z: 0}
-        meshRotation: {x: 0, y: 0, z: 0, w: 0}
-  levelMap:
-    m_keys:
-    - {x: 0, y: 0, z: 0}
-    m_values:
-    - localPosition: {x: 0, y: 0, z: 0}
-      gameObject: {fileID: 0}
-      data: {fileID: 0}
+  tileMap:
+    m_keys: []
+    m_values: []
+  worldspaceMap:
+    m_keys: []
+    m_values: []
   data: {fileID: 11400000, guid: f18d235532b8b1342867f473db0a3c82, type: 2}
 --- !u!4 &1237800901
 Transform:
@@ -452,16 +441,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: BasePrefab
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774917327605885743, guid: f856c558db13e0241a7795512e2f2d00,
-        type: 3}
-      propertyPath: m_Size.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774917327605885743, guid: f856c558db13e0241a7795512e2f2d00,
-        type: 3}
-      propertyPath: m_Center.z
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3156198526280870883, guid: f856c558db13e0241a7795512e2f2d00,
         type: 3}
@@ -511,11 +490,6 @@ PrefabInstance:
     - target: {fileID: 3156198526280870883, guid: f856c558db13e0241a7795512e2f2d00,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4404976648882848624, guid: f856c558db13e0241a7795512e2f2d00,
-        type: 3}
-      propertyPath: pendingHash
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

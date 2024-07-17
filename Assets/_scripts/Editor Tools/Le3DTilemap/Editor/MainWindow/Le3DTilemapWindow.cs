@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.EditorTools;
 using CJUtils;
 
 namespace Le3DTilemap {
@@ -11,11 +12,12 @@ namespace Le3DTilemap {
     public partial class Le3DTilemapWindow : EditorWindow {
 
         private Le3DTilemapTool tool;
-        private Le3DTilemapWindowPrefs prefs;
 
-        private Texture2D iconSearch, iconPlus, iconGridBox,
-                          iconGridPaint, iconGridPicking,
-                          iconTilemap, iconPlusMore;
+        private Le3DTilemapWindowSettings settings;
+        private bool showSettings;
+
+        private Texture2D iconSearch, iconPlus, iconTilemap,
+                          iconPlusMore, iconSettings;
 
         public static Le3DTilemapWindow Launch(Le3DTilemapTool tool) {
             Le3DTilemapWindow window = GetWindow<Le3DTilemapWindow>("Le3D Tilemap");
@@ -24,36 +26,45 @@ namespace Le3DTilemap {
         }
 
         void OnEnable() {
-            if (prefs is null) {
-                AssetUtils.TryRetrieveAsset(out prefs);
+            ToolManager.activeToolChanged += ToolManager_LinkTool;
+            tool = null;
+            if (settings is null) {
+                AssetUtils.TryRetrieveAsset(out settings);
             } LoadIcons();
-            if (prefs && prefs.activePalette) {
+            if (settings && settings.activePalette) {
                 UpdateSearchResults(searchString, out shownTiles);
             }
         }
 
+        private void ToolManager_LinkTool() {
+            if (ToolManager.activeToolType == typeof(Le3DTilemapTool)) {
+                tool = FindAnyObjectByType<Le3DTilemapTool>(FindObjectsInactive.Include);
+            }
+        }
+
         void OnDisable() {
+            ToolManager.activeToolChanged -= ToolManager_LinkTool;
             Resources.UnloadUnusedAssets();
         }
 
         void OnGUI() {
             ValidateRepaint();
             if (HasNullSettings()) {
-                if (prefs && prefs.activePalette) {
+                if (settings && settings.activePalette) {
                     UpdateSearchResults(searchString, out shownTiles);
                 } return;
-            } DrawMainToolbar();
+            } DrawWindowTitle();
             DrawPaletteEditor();
         }
 
         private bool HasNullSettings() {
-            bool missingPrefs = prefs == null;
+            bool missingPrefs = settings == null;
             if (missingPrefs) {
                 using (new EditorGUILayout.HorizontalScope()) {
                     GUILayout.FlexibleSpace();
                     using (new EditorGUILayout.VerticalScope()) {
                         GUILayout.FlexibleSpace();
-                        SceneViewUtils.DrawMissingSettingsPrompt(ref prefs, "Missing Window Preferences",
+                        SceneViewUtils.DrawMissingSettingsPrompt(ref settings, "Missing Window Preferences",
                                                              "New Window Preferences Asset",
                                                              iconSearch, iconPlus);
                         GUILayout.FlexibleSpace();
@@ -70,17 +81,30 @@ namespace Le3DTilemap {
                 || eType == EventType.MouseDrag)) Repaint();
         }
 
-        private void DrawMainToolbar() {
-            GUIContent[] toolbarContent = new GUIContent[] { new(iconGridBox),
-                                                             new(iconGridPaint),
-                                                             new(iconGridPicking) };
+        private void DrawWindowTitle() {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox, GUILayout.Height(50))) {
                 GUILayout.FlexibleSpace();
                 using (new EditorGUILayout.HorizontalScope()) {
                     GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox)) {
-                        int selected = 0;
-                        GUILayout.Toolbar(selected, toolbarContent, GUILayout.Width(200), GUILayout.Height(24));
+                    using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox, GUILayout.Width(128))) {
+                        GUILayout.FlexibleSpace();
+                        GUILayout.Label("Tile Palette Editor", UIStyles.CenteredLabelBold, GUILayout.Height(16));
+                        GUILayout.FlexibleSpace();
+                    } using (new EditorGUILayout.HorizontalScope(UIStyles.WindowBox, GUILayout.Width(26), GUILayout.Height(26))) {
+                        GUILayout.FlexibleSpace();
+                        GUI.color = UIColors.DefinedBlue;
+                        Rect buttonRect = EditorGUILayout.GetControlRect(GUILayout.Width(14), GUILayout.Height(14));
+                        if (showSettings) {
+                            GUI.Label(new(buttonRect) {
+                                x = buttonRect.x - 2,
+                                y = buttonRect.y - 2,
+                                width = buttonRect.width + 6,
+                                height = buttonRect.height + 6
+                            }, "", GUI.skin.button);
+                        } GUI.color = Color.white;
+                        if (GUI.Button(buttonRect, iconSettings, EditorStyles.iconButton)) {
+                            showSettings = !showSettings;
+                        } GUILayout.FlexibleSpace();
                     } GUILayout.FlexibleSpace();
                 } GUILayout.FlexibleSpace();
             }
@@ -89,11 +113,9 @@ namespace Le3DTilemap {
         private void LoadIcons() {
             EditorUtils.LoadIcon(ref iconSearch, EditorUtils.ICON_SEARCH);
             EditorUtils.LoadIcon(ref iconPlus, EditorUtils.ICON_PLUS);
-            EditorUtils.LoadIcon(ref iconGridBox, "Grid.BoxTool");
-            EditorUtils.LoadIcon(ref iconGridPaint, "Grid.PaintTool");
-            EditorUtils.LoadIcon(ref iconGridPicking, "Grid.PickingTool");
             EditorUtils.LoadIcon(ref iconTilemap, "d_Tilemap.ActiveTargetLayers");
             EditorUtils.LoadIcon(ref iconPlusMore, EditorUtils.ICON_PLUS_MORE);
+            EditorUtils.LoadIcon(ref iconSettings, EditorUtils.ICON_SETTINGS);
         }
     }
 }
