@@ -315,22 +315,33 @@ namespace Le3DTilemap {
         }
 
         private string AssemblePrefab(out bool success) {
-            GameObject mainRoot = new(prefabName);
-            GameObject meshRoot = PrefabUtility.InstantiatePrefab(prefab, mainRoot.transform) as GameObject;
-            if (info) {
-                info = meshRoot.GetComponentInChildren<TileInfo>();
-                while (PrefabUtility.IsPartOfAnyPrefab(info.transform.parent)) {
-                    GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(info.transform.parent);
-                    PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.OutermostRoot,
-                                                       InteractionMode.AutomatedAction);
-                } info.transform.SetParent(mainRoot.transform);
-            } else {
-                GameObject infoInstance = PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab,
-                                                                          mainRoot.transform) as GameObject;
-                infoInstance.TryGetComponent(out info);
-            } info.MeshRoot = meshRoot.transform;
 
             bool inPlace = setupMode == SetupMode.InPlace;
+            GameObject mainRoot;
+
+            if (info && info.MeshRoot) {
+                mainRoot = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            } else {
+                mainRoot = new(prefabName);
+                GameObject meshRoot = PrefabUtility.InstantiatePrefab(prefab, mainRoot.transform) as GameObject;
+                if (info) {
+                    info = meshRoot.GetComponentInChildren<TileInfo>();
+                    while (PrefabUtility.IsPartOfAnyPrefab(info.transform.parent)) {
+                        GameObject root = PrefabUtility.GetOutermostPrefabInstanceRoot(info.transform.parent);
+                        PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.OutermostRoot,
+                                                           InteractionMode.AutomatedAction);
+                    } info.transform.SetParent(mainRoot.transform);
+                } else {
+                    GameObject infoInstance = PrefabUtility.InstantiatePrefab(settings.tileInfoPrefab,
+                                                                              mainRoot.transform) as GameObject;
+                    infoInstance.TryGetComponent(out info);
+                } info.MeshRoot = meshRoot.transform;
+
+                if (inPlace && PrefabUtility.IsPartOfAnyPrefab(meshRoot)) {
+                        PrefabUtility.UnpackPrefabInstance(meshRoot, PrefabUnpackMode.Completely,
+                                                           InteractionMode.AutomatedAction);
+                } meshRoot.name = $"Mesh Root ({prefabName})";
+            }
 
             string path = AssetDatabase.GetAssetPath(prefab);
             string folder = path.RemovePathEnd("\\/");
@@ -341,15 +352,9 @@ namespace Le3DTilemap {
             string newPath = directOverride ? path
                            : AssetUtils.ProduceValidAssetNotation(folder, newName, ".prefab");
 
-            if (inPlace) {
-                AssetDatabase.RenameAsset(path, newName);
-                if (PrefabUtility.IsPartOfAnyPrefab(meshRoot)) {
-                    PrefabUtility.UnpackPrefabInstance(meshRoot, PrefabUnpackMode.Completely,
-                                                       InteractionMode.AutomatedAction);
-                }
-            } meshRoot.name = $"Mesh Root ({prefab.name})";
+            if (inPlace) AssetDatabase.RenameAsset(path, newName);
             mainRoot.transform.DeepIterate((t) => { t.gameObject.isStatic = !isDynamic;
-                                                    t.gameObject.layer = 1 << 6; });
+                                                    t.gameObject.layer = 6; });
             GameObject newAsset = PrefabUtility.SaveAsPrefabAsset(mainRoot, newPath, out success);
             DestroyImmediate(mainRoot);
             return path;

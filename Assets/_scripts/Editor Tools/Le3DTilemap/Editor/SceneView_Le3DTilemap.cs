@@ -60,7 +60,7 @@ namespace Le3DTilemap {
                         if (mouseInRect && willHide) {
                             bool hide = settings.sceneGUI.hideContents = !settings.sceneGUI.hideContents;
                             if (settings.sceneGUI.hideContents) {
-                                heightDiff = settings.sceneGUI.rect.height * 0.57f;
+                                heightDiff = settings.sceneGUI.rect.height * 0.755f;
                             } float diffSign = hide ? 1 : -1;
                             settings.sceneGUI.rect = new Rect(settings.sceneGUI.rect) {
                                 y = settings.sceneGUI.rect.y + heightDiff * diffSign,
@@ -205,9 +205,47 @@ namespace Le3DTilemap {
                                 } if (changeScope.changed) EditorUtility.SetDirty(settings);
                             }
                         } else {
-                            using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Label", lStyle);
-                                GUILayout.FlexibleSpace();
+                            switch (toolMode) {
+                                case ToolMode.Select:
+                                case ToolMode.MSelect:
+                                    using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
+                                        GUILayout.Label("No Tiles Selected", UIStyles.CenteredLabelBold);
+                                    } using (new EditorGUILayout.HorizontalScope()) {
+                                        GUI.enabled = false;
+                                        GUILayout.FlexibleSpace();
+                                        GUIContent content = new (" Move", iconDisplace, "Move (W)");
+                                        GUIStyle style = new(GUI.skin.button) { margin = { right = 0 } };
+                                        Rect rect = EditorGUILayout.GetControlRect(false, 19, style,
+                                                                                   GUILayout.Width(87));
+                                        rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
+                                        GUI.Button(rect, content, style);
+
+                                        content = new (" Rotate", iconRotate, "Rotate (R)");
+                                        style = new(GUI.skin.button) { margin = { left = 0 } };
+                                        rect = EditorGUILayout.GetControlRect(false, 19, style,
+                                                                              GUILayout.Width(87));
+                                        rect = new(rect) { y = rect.y - 1, height = rect.height + 2 };
+                                        GUI.Button(rect, content, style);
+                                        GUILayout.FlexibleSpace();
+                                        GUI.enabled = true;
+                                    } break;
+                                case ToolMode.Paint:
+                                case ToolMode.Fill:
+                                    using (new EditorGUILayout.HorizontalScope()) {
+                                        GUILayout.Label("Tile");
+                                        Rect rect = EditorGUILayout.GetControlRect(false);
+                                        rect = new Rect(rect) { y = rect.y - 1 };
+                                        EditorGUI.ObjectField(rect, SelectedTile, typeof(TileData), false);
+                                    } if (GUILayout.Button(new GUIContent(" Focus Palette", iconPalette),
+                                                       GUILayout.Height(24))) {
+                                        Le3DTilemapWindow.Launch(this);
+                                    } break;
+                                case ToolMode.Erase:
+                                    break;
+                                case ToolMode.Clear:
+                                    break;
+                                case ToolMode.Pick:
+                                    break;
                             }
                         }
                     }

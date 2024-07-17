@@ -26,8 +26,8 @@ namespace Le3DTilemap {
         }
 
         void OnEnable() {
-            ToolManager.activeToolChanged += ToolManager_LinkTool;
-            tool = null;
+            ToolManager.activeToolChanged += FindToolInstance;
+            tool = null ;
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
             } LoadIcons();
@@ -36,14 +36,8 @@ namespace Le3DTilemap {
             }
         }
 
-        private void ToolManager_LinkTool() {
-            if (ToolManager.activeToolType == typeof(Le3DTilemapTool)) {
-                tool = FindAnyObjectByType<Le3DTilemapTool>(FindObjectsInactive.Include);
-            }
-        }
-
         void OnDisable() {
-            ToolManager.activeToolChanged -= ToolManager_LinkTool;
+            ToolManager.activeToolChanged -= FindToolInstance;
             Resources.UnloadUnusedAssets();
         }
 

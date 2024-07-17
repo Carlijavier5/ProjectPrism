@@ -236,10 +236,11 @@ namespace Le3DTilemap {
         }
 
         private void ToggleSelectedTile(TileData data) {
+            if (settings.launchToolOnSelect) ToolManager.SetActiveTool<Le3DTilemapTool>();
             if (tool) {
-                SelectedTile = SelectedTile == data ? null : data;
-            } else if (!settings.launchToolOnSelect) {
-                ToolManager.SetActiveTool<Le3DTilemapTool>();
+                SelectedTile = SelectedTile != null && SelectedTile == data ? null : data;
+            } else {
+                FindToolInstance();
                 SelectTileAsync(data);
             }
         }
@@ -261,6 +262,14 @@ namespace Le3DTilemap {
             }
         }
 
+        private void FindToolInstance() {
+            if (ToolManager.activeToolType == typeof(Le3DTilemapTool)) {
+                tool = Resources.InstanceIDIsValid(Le3DTilemapTool.InstanceID)
+                     ? Resources.InstanceIDToObject(Le3DTilemapTool.InstanceID) as Le3DTilemapTool
+                     : null;
+            }
+        }
+
         private async void ConfirmDrag() {
             isDrag = false;
             await Task.Delay(100);
@@ -270,7 +279,7 @@ namespace Le3DTilemap {
         private async void SelectTileAsync(TileData data) {
             bool lifetimeExpired = false;
             using (var timer = new System.Threading.Timer((obj) => { lifetimeExpired = true; }, 
-                                                          null, 2000, 2000)) {
+                                                          null, 1000, 1000)) {
                 while (!tool && !lifetimeExpired) {
                     await Task.Yield();
                     if (tool) SelectedTile = data;

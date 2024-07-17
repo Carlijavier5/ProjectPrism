@@ -10,7 +10,7 @@ namespace Le3DTilemap {
         public int cardSize = 60;
         public int cardSizeMultiplier = 1;
 
-        public bool launchToolOnSelect;
+        public bool launchToolOnSelect = true;
     }
 
     [CustomEditor(typeof(Le3DTilemapWindowSettings))]

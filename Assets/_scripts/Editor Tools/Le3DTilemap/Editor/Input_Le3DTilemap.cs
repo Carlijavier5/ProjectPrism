@@ -23,7 +23,7 @@ namespace Le3DTilemap {
                     DrawAreaSelection();
                     break;
                 case ToolMode.Paint:
-
+                    DrawPaintHint();
                     break;
             }
         }

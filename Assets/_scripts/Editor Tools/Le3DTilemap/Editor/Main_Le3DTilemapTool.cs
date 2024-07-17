@@ -10,11 +10,10 @@ namespace Le3DTilemap {
     [EditorTool("Le3DTilemap")]
     public partial class Le3DTilemapTool : GridTool {
 
-        public static event System.Action OnToolActivated;
+        public static int InstanceID { get; private set; }
 
         private Le3DTilemapSettings settings;
 
-        private Le3DTilemapWindow window;
         private LevelGridHook sceneHook;
 
         private GUIContent toolIcon;
@@ -25,14 +24,19 @@ namespace Le3DTilemap {
         private Texture2D iconWarning, iconSelect, iconMSelect, 
                           iconPaint, iconErase, iconFill,
                           iconClear, iconPick, iconTransform,
-                          iconDisplace, iconRotate;
+                          iconDisplace, iconRotate, iconPalette;
 
         private TileData selectedTile;
         public TileData SelectedTile {
             get => selectedTile;
             set {
-                /// Generate collider center array;
-                selectedTile = value;
+                if (value != null) {
+                    if (toolMode != ToolMode.Paint
+                    &&  toolMode != ToolMode.Fill) {
+                        SetToolMode(ToolMode.Paint);
+                    } int size = value.Info.Colliders.Count;
+                    highlightCenters = new Vector3[size];
+                } selectedTile = value;
             } 
         }
 
@@ -41,16 +45,15 @@ namespace Le3DTilemap {
 
         public override void OnActivated() {
             base.OnActivated();
+            InstanceID = GetInstanceID();
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
             } allowDirectGridMode = false;
             LoadIcons();
 
             LoadPhysicsScene(out physicsSpace);
-            window = Le3DTilemapWindow.Launch(this);
+            Le3DTilemapWindow.Launch(this);
             sceneHook = FindAnyObjectByType<LevelGridHook>();
-            OnToolActivated?.Invoke();
-            OnToolActivated = null;
         }
 
         public override void OnToolGUI(EditorWindow window) {
@@ -110,6 +113,7 @@ namespace Le3DTilemap {
             EditorUtils.LoadIcon(ref iconTransform, "d_RectTransform Icon");
             EditorUtils.LoadIcon(ref iconDisplace, "d_UnityEditor.Graphs.AnimatorControllerTool");
             EditorUtils.LoadIcon(ref iconRotate, "d_preAudioLoopOff");
+            EditorUtils.LoadIcon(ref iconPalette, "_TilePalette");
         }
     }
 }
