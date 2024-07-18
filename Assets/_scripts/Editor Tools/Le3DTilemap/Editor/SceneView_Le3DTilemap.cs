@@ -7,7 +7,8 @@ using CJUtils;
 namespace Le3DTilemap {
     public partial class Le3DTilemapTool {
 
-        private GridSettingsPage settingsPage;
+        private enum ToolSettingsPage { Select, MultiSelect, Paint, Fill, Clear }
+        private ToolSettingsPage settingsPage;
         private ToolMode toolMode;
 
         private bool willHide;
@@ -97,15 +98,15 @@ namespace Le3DTilemap {
                                     fontSize = 10
                                 };
                                 if ((int) settingsPage < 2) {
-                                    DrawSettingsPageButton(GridSettingsPage.Shortcuts,
+                                    DrawSettingsPageButton(ToolSettingsPage.Select,
                                                            new RectOffset() { right = 0 },
                                                            GUILayout.Width(78));
-                                    DrawSettingsPageButton(GridSettingsPage.Raycasts,
+                                    DrawSettingsPageButton(ToolSettingsPage.MultiSelect,
                                                            new RectOffset() { left = 0 },
                                                            GUILayout.Width(78));
                                     if (GUILayout.Button("▶", style,
                                         GUILayout.Width(24), GUILayout.Height(19))) {
-                                        settingsPage = GridSettingsPage.Size;
+                                        settingsPage = ToolSettingsPage.Paint;
                                     }
                                 } else {
                                     style = new(GUI.skin.button) {
@@ -114,15 +115,15 @@ namespace Le3DTilemap {
                                     };
                                     if (GUILayout.Button("◀", style,
                                         GUILayout.Width(24), GUILayout.Height(19))) {
-                                        settingsPage = GridSettingsPage.Shortcuts;
+                                        settingsPage = ToolSettingsPage.Select;
                                     }
-                                    DrawSettingsPageButton(GridSettingsPage.Size,
+                                    DrawSettingsPageButton(ToolSettingsPage.Paint,
                                                            new RectOffset() { right = 0 },
                                                            GUILayout.Width(52));
-                                    DrawSettingsPageButton(GridSettingsPage.View,
+                                    DrawSettingsPageButton(ToolSettingsPage.Fill,
                                                            new RectOffset() { right = 0, left = 0 },
                                                            GUILayout.Width(52));
-                                    DrawSettingsPageButton(GridSettingsPage.Colors,
+                                    DrawSettingsPageButton(ToolSettingsPage.Clear,
                                                            new RectOffset() { left = 0 },
                                                            GUILayout.Width(52));
                                 }
@@ -197,11 +198,75 @@ namespace Le3DTilemap {
                         GUIStyle lStyle = new(GUI.skin.label) { contentOffset = new Vector2(0, -1) };
                         if (showSettings) {
                             using (var changeScope = new EditorGUI.ChangeCheckScope()) {
+                                GUIStyle style = new(GUI.skin.button) { margin = new() };
+                                GUIContent content;
                                 switch (settingsPage) {
-                                    case GridSettingsPage.Raycasts:
-                                        break;
-                                    case GridSettingsPage.Colors:
-                                        break;
+                                    case ToolSettingsPage.Select:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new ("Focus Inspector On Select");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.focusInspectorOnSelect
+                                                = EditorGUILayout.Toggle(settings.focusInspectorOnSelect,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+
+                                        } break;
+                                    case ToolSettingsPage.MultiSelect:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new ("Include Partial Selections");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.includePartialSelectionsMSelect
+                                                = EditorGUILayout.Toggle(settings.includePartialSelectionsMSelect,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+
+                                        } break;
+                                    case ToolSettingsPage.Paint:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new ("Focus Palette On Enter");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.focusPaletteOnEnterPaint
+                                                = EditorGUILayout.Toggle(settings.focusPaletteOnEnterPaint,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new ("Rotate Tile to Surface");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.rotateTileToSurface
+                                                = EditorGUILayout.Toggle(settings.rotateTileToSurface,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } break;
+                                    case ToolSettingsPage.Fill:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new("Focus Palette On Enter");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.focusPaletteOnEnterFill
+                                                = EditorGUILayout.Toggle(settings.focusPaletteOnEnterFill,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+
+                                        } break;
+                                    case ToolSettingsPage.Clear:
+                                        using (new EditorGUILayout.HorizontalScope()) {
+                                            content = new("Include Partial Selections");
+                                            GUILayout.Label(content, GUILayout.Width(150));
+                                            GUILayout.FlexibleSpace();
+                                            settings.includePartialSelectionsClear
+                                                = EditorGUILayout.Toggle(settings.includePartialSelectionsClear,
+                                                                         GUILayout.Width(12));
+                                            GUILayout.FlexibleSpace();
+                                        } using (new EditorGUILayout.HorizontalScope()) {
+
+                                        } break;
                                 } if (changeScope.changed) EditorUtility.SetDirty(settings);
                             }
                         } else {
@@ -268,11 +333,11 @@ namespace Le3DTilemap {
             }
         }
 
-        private void DrawSettingsPageButton(GridSettingsPage page, RectOffset margin,
+        private void DrawSettingsPageButton(ToolSettingsPage page, RectOffset margin,
                                     params GUILayoutOption[] options) {
             GUI.backgroundColor = settingsPage == page ? UIColors.DefinedBlue : Color.white;
             GUIStyle style = new(GUI.skin.button) { margin = margin };
-            if (GUILayout.Button(System.Enum.GetName(typeof(GridSettingsPage), page),
+            if (GUILayout.Button(System.Enum.GetName(typeof(ToolSettingsPage), page),
                                  style, options)) {
                 settingsPage = page;
             } GUI.backgroundColor = Color.white;

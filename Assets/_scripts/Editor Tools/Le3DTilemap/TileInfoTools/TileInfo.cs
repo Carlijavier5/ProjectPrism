@@ -74,6 +74,13 @@ namespace Le3DTilemap {
                                                 tileRotation, meshRotation);
         }
 
+        public (Vector3, Vector3Int)[] GetSimplifiedColliderInfo() {
+            (Vector3, Vector3Int)[] newSpace = new (Vector3, Vector3Int)[Colliders.Count];
+            for (int i = 0; i < Colliders.Count; i++) {
+                newSpace[i] = (Colliders[i].Center, Colliders[i].Size);
+            } return newSpace;
+        }
+
         public void TranslatePivot(Vector3Int diff, bool translateColliders,
                            bool translateMesh) {
             diff = transform.InverseTransformPoint(diff).Round();

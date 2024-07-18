@@ -119,7 +119,7 @@ namespace Le3DTilemap {
         private void DrawContent() {
             using (new EditorGUILayout.VerticalScope(UIStyles.WindowBox)) {
                 if (gridQuad == null) {
-                    GUIUtils.DrawScopeCenteredText("Missing Dynamic Quad;\n"
+                    GUIUtils.DrawScopeCenteredText("Missing Dynamic Quad\n"
                                                    + "Check Grid Settings!");
                     if (GUILayout.Button("Reload")) InitializeLocalGrid();
                 } else {
@@ -201,13 +201,13 @@ namespace Le3DTilemap {
                                         } break;
                                     case GridSettingsPage.Raycasts:
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Input Distance:");
+                                            GUILayout.Label("Input Distance");
                                             EditorGUIUtility.labelWidth = 0;
                                             GUILayout.FlexibleSpace();
                                             gridSettings.raycastDistance = EditorGUILayout.IntField(gridSettings
                                                                            .raycastDistance, GUILayout.Width(75));
                                         } using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("CD Multiplier:");
+                                            GUILayout.Label("CD Multiplier");
                                             EditorGUIUtility.labelWidth = 0;
                                             GUILayout.FlexibleSpace();
                                             gridSettings.raycastCDMult = EditorGUILayout.DoubleField(gridSettings
@@ -215,14 +215,14 @@ namespace Le3DTilemap {
                                         } break;
                                     case GridSettingsPage.Size:
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Diameter:");
+                                            GUILayout.Label("Diameter");
                                             EditorGUIUtility.labelWidth = 0;
                                             GUILayout.FlexibleSpace();
                                             int size = EditorGUILayout.IntField(gridSettings.diameter,
                                                                                 GUILayout.Width(90));
                                             if (gridSettings.diameter != size) SetGridDiameter(size);
                                         } using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Thickness:");
+                                            GUILayout.Label("Thickness");
                                             EditorGUIUtility.labelWidth = 0;
                                             GUILayout.FlexibleSpace();
                                             float girth = EditorGUILayout.FloatField(gridSettings.thickness,
@@ -232,26 +232,26 @@ namespace Le3DTilemap {
                                     case GridSettingsPage.View:
                                         GUIStyle style = new(GUI.skin.button) { margin = new() };
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Ignore zTest:", lStyle);
+                                            GUILayout.Label("Ignore zTest", lStyle);
                                             GUILayout.FlexibleSpace();
                                             GUIUtils.OnOffButton(gridSettings.ignoreZTest, out bool ignoreZTest,
                                                                  style, GUILayout.Width(60));
                                             if (ignoreZTest != gridSettings.ignoreZTest) SetIgnoreZTest(ignoreZTest);
                                         } using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Follow Camera:", lStyle);
+                                            GUILayout.Label("Follow Camera", lStyle);
                                             GUILayout.FlexibleSpace();
                                             GUIUtils.OnOffButton(gridSettings.followCamera, out gridSettings.followCamera,
                                                                  style, GUILayout.Width(60));
                                         } break;
                                     case GridSettingsPage.Colors:
                                         using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Base:", GUILayout.Width(35));
+                                            GUILayout.Label("Base", GUILayout.Width(35));
                                             GUILayout.FlexibleSpace();
                                             Color baseColor = EditorGUILayout.ColorField(gridSettings.baseColor,
                                                                                             GUILayout.Width(125));
                                             if (gridSettings.baseColor != baseColor) SetGridColor(baseColor);
                                         } using (new EditorGUILayout.HorizontalScope()) {
-                                            GUILayout.Label("Hint:", GUILayout.Width(35));
+                                            GUILayout.Label("Hint", GUILayout.Width(35));
                                             GUILayout.FlexibleSpace();
                                             gridSettings.hintColor = EditorGUILayout.ColorField(gridSettings.hintColor,
                                                                                             GUILayout.Width(125));
@@ -260,7 +260,7 @@ namespace Le3DTilemap {
                             }
                         } else {
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Orientation:", lStyle);
+                                GUILayout.Label("Orientation", lStyle);
                                 GUILayout.FlexibleSpace();
                                 GUIStyle style = new(EditorStyles.popup) { alignment = TextAnchor.MiddleCenter,
                                                                            margin = new() };
@@ -271,7 +271,7 @@ namespace Le3DTilemap {
                                 }
                             }
                             using (new EditorGUILayout.HorizontalScope()) {
-                                GUILayout.Label("Toggle Grid:", lStyle);
+                                GUILayout.Label("Toggle Grid", lStyle);
                                 GUILayout.FlexibleSpace();
                                 GUIStyle style = new(GUI.skin.button) { margin = new() };
                                 GUIUtils.OnOffButton(gridQuad.gameObject.activeSelf,

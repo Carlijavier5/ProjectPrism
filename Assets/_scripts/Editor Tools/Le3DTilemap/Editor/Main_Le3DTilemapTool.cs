@@ -34,8 +34,10 @@ namespace Le3DTilemap {
                     if (toolMode != ToolMode.Paint
                     &&  toolMode != ToolMode.Fill) {
                         SetToolMode(ToolMode.Paint);
-                    } int size = value.Info.Colliders.Count;
-                    highlightCenters = new Vector3[size];
+                    } baseTilespace = value.Info.GetSimplifiedColliderInfo();
+                    rotatedTilespace = value.Info.GetSimplifiedColliderInfo();
+                    int size = value.Info.Colliders.Count;
+                    paintHighlightData = new (Vector3, Vector3Int)[size];
                 } selectedTile = value;
             } 
         }
@@ -51,6 +53,7 @@ namespace Le3DTilemap {
             } allowDirectGridMode = false;
             LoadIcons();
 
+            if (SelectedTile != null) SelectedTile = SelectedTile;
             LoadPhysicsScene(out physicsSpace);
             Le3DTilemapWindow.Launch(this);
             sceneHook = FindAnyObjectByType<LevelGridHook>();

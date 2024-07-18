@@ -83,8 +83,9 @@ namespace Le3DTilemap {
                     DoRaycastInput(DoAreaSelectionSignal);
                     break;
                 case ToolMode.Paint:
-                    DoRaycastInput(DoPaintSignal);
-                    break;
+                    if (SelectedTile) {
+                        DoRaycastInput(DoPaintSignal);
+                    } break;
             }
         }
 
@@ -167,13 +168,13 @@ namespace Le3DTilemap {
                     case AreaDrawState.EndAwait:
                         Vector3 center1 = (areaStart - Vector3.one * OFFSET + areaEnd + Vector3.one * OFFSET) / 2;
                         Vector3 size1 = ((areaEnd - areaStart).Abs() + Vector3.one);
-                        HandleUtils.DrawOctohedralVolume(center1, size1, Color.blue, Color.blue);
+                        HandleUtils.DrawOctohedralVolume(center1, size1, UIColors.Blue, UIColors.Blue);
                         break;
                     case AreaDrawState.MarkCorners:
                         if (HasHint) {
                             Vector3 center2 = (areaStart - Vector3.one * OFFSET + HintTile + Vector3.one * OFFSET) / 2;
                             Vector3 size2 = ((HintTile - areaStart).Abs() + Vector3.one);
-                            HandleUtils.DrawOctohedralVolume(center2, size2, Color.blue, Color.blue);
+                            HandleUtils.DrawOctohedralVolume(center2, size2, UIColors.Blue, UIColors.Blue);
                         } break;
                 }
             }
@@ -277,11 +278,20 @@ namespace Le3DTilemap {
 
     public partial class Le3DTilemapTool {
 
-        private Vector3[] highlightCenters;
+        private (Vector3, Vector3Int)[] baseTilespace;
+        private (Vector3, Vector3Int)[] rotatedTilespace;
+        private (Vector3, Vector3Int)[] paintHighlightData;
+
+        private Vector3Int rotationNormal = Vector3Int.zero;
 
         private void DrawPaintHint() {
             if (HasHint) {
-
+                for (int i = 0; i < paintHighlightData.Length; i++) {
+                    using (new Handles.DrawingScope(UIColors.Blue)) {
+                        Handles.DrawWireCube(paintHighlightData[i].Item1,
+                                             paintHighlightData[i].Item2);   
+                    }
+                }
             }
         }
 
@@ -294,7 +304,9 @@ namespace Le3DTilemap {
                 if (physicsSpace.Raycast(ray.origin, ray.direction,
                     out RaycastHit hit, gridSettings.raycastDistance, 1 << 6)) {
                     standardHit = true;
+                    EvaluateNormalRotation(hit.normal.Round());
                     Vector3Int hintTile = (hit.point + hit.normal * OFFSET).Round();
+
                     switch (eventType) {
                         case EventType.MouseMove:
                             PaintMove(hintTile, false);
@@ -306,7 +318,7 @@ namespace Le3DTilemap {
                             RaycastCD = gridSettings.raycastCDMult * 0.025f;
                             break;
                     }
-                }
+                } else ClearHint();
             } 
 
             if (!standardHit) {
@@ -330,23 +342,69 @@ namespace Le3DTilemap {
         }
 
         private void PaintMove(Vector3Int hintTile, bool allowDrag) {
-            if (HintTile != hintTile) {
+            if (HintTile != hintTile || !HasHint) {
                 if (allowDrag && Event.current.type == EventType.MouseDrag) {
                     /// Paint on new tile;
                 } else {
-                    /// Recompute highlight;
-                }
-            } SetPaintHint(hintTile);
-        }
-
-        private void SetPaintHint(Vector3Int hintTile) {
-            ///highlightCenters.Offset(hintTile - HintTile);
-            HintTile = hintTile;
+                    for (int i = 0; i < paintHighlightData.Length; i++) {
+                        paintHighlightData[i] = (rotatedTilespace[i].Item1 + hintTile,
+                                                 rotatedTilespace[i].Item2);
+                    }
+                } HintTile = hintTile;
+            }
         }
 
         private void PaintDown(Vector3Int paintDown) {
             /// Paint on grid;
             ClearHint();
+        }
+
+        private void RotateTilespace((Vector3, Vector3Int)[] targetSpace,
+                                      (Vector3, Vector3Int)[] baseSpace, Vector3Int normal) {
+            if (baseSpace.Length != targetSpace.Length) {
+                Debug.LogError($"Base tilespace length ({baseSpace.Length}) "
+                             + $"does not match target ({targetSpace.Length}) for rotation");
+                return;
+            }
+
+            float angle = normal == Vector3Int.left 
+                     || normal == Vector3Int.forward ? 90
+                      : normal == Vector3Int.right 
+                     || normal == Vector3Int.back ? 270
+                      : normal == Vector3Int.down ? 180 : 0;
+            if (angle == 0) {
+                for (int i = 0; i < targetSpace.Length; i++) {
+                    targetSpace[i] = baseSpace[i];
+                } return;
+            } angle = Mathf.Deg2Rad * angle;
+            Matrix4x4 tMatrix = normal.z != 0 ? new Matrix4x4(new(1, 0, 0, 0),
+                                                              new(0, Mathf.Cos(angle), Mathf.Sin(angle), 0),
+                                                              new(0, -Mathf.Sin(angle), Mathf.Cos(angle), 0),
+                                                              new(0, 0, 0, 1))
+                              : normal.x != 0
+                             || normal.y != 0 ? new Matrix4x4(new(Mathf.Cos(angle), Mathf.Sin(angle), 0, 0),
+                                                              new(-Mathf.Sin(angle), Mathf.Cos(angle), 0, 0),
+                                                              new(0, 0, 1, 0),
+                                                              new(0, 0, 0, 1))
+                                              : new Matrix4x4(new(1, 0, 0, 0),
+                                                              new(0, 1, 0, 0),
+                                                              new(0, 0, 1, 0),
+                                                              new(0, 0, 0, 1));
+            for (int i = 0; i < baseSpace.Length; i++) {
+                targetSpace[i] = (tMatrix.MultiplyPoint3x4(baseSpace[i].Item1),
+                                  tMatrix.MultiplyPoint3x4(baseSpace[i].Item2).Round().Abs());
+            }
+        }
+
+        private void EvaluateNormalRotation(Vector3Int normal) {
+            if (settings.rotateTileToSurface) {
+                ///Debug.Log($"{rotationNormal}, {normal}") ;
+                if (rotationNormal != normal) {
+                    RotateTilespace(rotatedTilespace, baseTilespace, normal);
+                    rotationNormal = normal;
+                    ClearHint();
+                }
+            }
         }
     }
 }
