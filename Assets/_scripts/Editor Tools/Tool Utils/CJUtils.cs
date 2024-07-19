@@ -394,7 +394,8 @@ namespace CJUtils {
                 AssetDatabase.CreateAsset(newAsset, targetLocation);
                 AssetDatabase.Refresh();
                 return newAsset;
-            } return null;
+            } Debug.LogWarning($"Failed to create asset at {location}");
+            return null;
         }
 
         public static string ProduceValidAssetNotation(string location, string name, int appendix = 0) {

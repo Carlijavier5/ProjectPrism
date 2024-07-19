@@ -422,7 +422,6 @@ namespace Le3DTilemap {
 
         private void EvaluateNormalRotation(Vector3Int normal) {
             if (settings.rotateTileToSurface) {
-                ///Debug.Log($"{rotationNormal}, {normal}") ;
                 if (rotationNormal != normal) {
                     RotateTilespace(rotatedTilespace, baseTilespace, normal);
                     rotationNormal = normal;
