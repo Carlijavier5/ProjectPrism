@@ -55,7 +55,7 @@ namespace Le3DTilemap {
             } return missingSettings;
         }
 
-        private void InitializeLocalGrid() {
+        protected void InitializeLocalGrid() {
             gridQuad = FindAnyObjectByType<DynamicGridQuad>(FindObjectsInactive.Include);
             if (gridQuad == null) {
                 GameObject go = PrefabUtility.InstantiatePrefab(gridSettings.quadPrefab) as GameObject;

@@ -350,14 +350,5 @@ namespace Le3DTilemap {
                 SetToolMode(mode);
             }
         }
-
-        private void SetToolMode(ToolMode toolMode) {
-            this.toolMode = toolMode;
-            switch (toolMode) {
-                case ToolMode.Paint:
-                case ToolMode.Fill:
-                    break;
-            }
-        }
     }
 }

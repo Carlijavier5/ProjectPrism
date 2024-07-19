@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditor.ShortcutManagement;
 using UnityEditor.EditorTools;
+using UnityEditor.SceneManagement;
 using CJUtils;
 
 namespace Le3DTilemap {
@@ -39,7 +40,7 @@ namespace Le3DTilemap {
                     int size = value.Info.Colliders.Count;
                     paintHighlightData = new (Vector3, Vector3Int)[size];
                 } selectedTile = value;
-            } 
+            }
         }
 
         [Shortcut("Le3DTilemap Tool", KeyCode.Tab)]
@@ -47,6 +48,7 @@ namespace Le3DTilemap {
 
         public override void OnActivated() {
             base.OnActivated();
+            PrefabStage.prefabStageClosing += OnPrefabStageClose;
             InstanceID = GetInstanceID();
             if (settings is null) {
                 AssetUtils.TryRetrieveAsset(out settings);
@@ -55,8 +57,8 @@ namespace Le3DTilemap {
 
             if (SelectedTile != null) SelectedTile = SelectedTile;
             LoadPhysicsScene(out physicsSpace);
-            Le3DTilemapWindow.Launch(this);
             sceneHook = FindAnyObjectByType<LevelGridHook>();
+            SelectSceneHook();
         }
 
         public override void OnToolGUI(EditorWindow window) {
@@ -99,6 +101,7 @@ namespace Le3DTilemap {
 
         public override void OnWillBeDeactivated() {
             base.OnWillBeDeactivated();
+            PrefabStage.prefabStageClosing -= OnPrefabStageClose;
             settings = null;
             Resources.UnloadUnusedAssets();
         }

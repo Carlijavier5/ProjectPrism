@@ -15,6 +15,25 @@ namespace Le3DTilemap {
             set { raycastCD = EditorApplication.timeSinceStartup + value; }
         }
 
+        private void SetToolMode(ToolMode toolMode) {
+            this.toolMode = toolMode;
+            switch (toolMode) {
+                case ToolMode.Paint:
+                    if (settings.focusPaletteOnEnterPaint) {
+                        Le3DTilemapWindow.Launch(this);
+                    } break;
+                case ToolMode.Fill:
+                    if (settings.focusPaletteOnEnterFill) {
+                        Le3DTilemapWindow.Launch(this);
+                    } break;
+            } ClearHint();
+            pendingCast = true;
+        }
+
+        private void SelectSceneHook() {
+            if (sceneHook) Selection.objects = new[] { sceneHook.gameObject };
+        }
+
         private void HighlightModeContent(SceneView sceneView) {
              switch (toolMode) {
                 case ToolMode.Select:
@@ -55,13 +74,18 @@ namespace Le3DTilemap {
                     AddCustomCursor(sceneView, iconPick, new Vector2());
                     break;
             }
-
-
         }
 
         private void AddCustomCursor(SceneView sceneView, Texture2D texture, Vector2 hotspot) {
             Cursor.SetCursor(texture, hotspot, CursorMode.Auto);
             EditorGUIUtility.AddCursorRect(sceneView.position, MouseCursor.CustomCursor);
+        }
+
+        private void OnPrefabStageClose(PrefabStage stage) {
+            DestroyImmediate(gridQuad.gameObject);
+            InitializeLocalGrid();
+            LoadPhysicsScene(out physicsSpace);
+            SelectSceneHook();
         }
 
         private void LoadPhysicsScene(out PhysicsScene physicsSpace) {

@@ -70,7 +70,7 @@ namespace Le3DTilemap {
                             }; EditorUtility.SetDirty(settings);
                         } willHide = false;
                     }
-                } if (!settings.sceneGUI.hideContents) DrawContent();
+                } if (settings && !settings.sceneGUI.hideContents) DrawContent();
             } GUI.DragWindow();
         }
 
